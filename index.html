@@ -25,6 +25,7 @@
   --red:        #c44d3d;
   --red-light:  #fdf0ea;
   --green:      #2a6e3f;
+  --green-light:#eaf4ee;
   --white:      #ffffff;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body:    'Inter', system-ui, sans-serif;
@@ -139,6 +140,13 @@ main {
   color: var(--gold);
   margin-bottom: 10px;
 }
+.presets-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-style: italic;
+  line-height: 1.5;
+}
 .presets-btns {
   display: flex;
   flex-wrap: wrap;
@@ -155,6 +163,14 @@ main {
   transition: all 0.15s;
 }
 .preset-btn:hover { background: var(--gold-light); border-color: var(--gold); }
+.preset-btn.buy-preset {
+  border-color: var(--green);
+  color: var(--green);
+}
+.preset-btn.buy-preset:hover {
+  background: var(--green-light);
+  border-color: var(--green);
+}
 .reset-btn {
   padding: 8px 16px;
   border: 1px solid var(--border);
@@ -400,6 +416,21 @@ main {
   font-style: italic;
 }
 .summary-strip strong { color: var(--navy); font-style: normal; }
+
+/* Market context note */
+.market-note {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  font-family: var(--font-body);
+}
+.market-note strong { color: var(--text); font-weight: 600; }
 
 /* Chart */
 .chart-card {
@@ -671,11 +702,13 @@ footer .dot { color: var(--gold); font-style: normal; }
   <!-- PRESETS -->
   <div class="presets-row">
     <div class="presets-label">Quick Presets</div>
+    <div class="presets-hint">Today's US rent-to-price ratios typically favor renting. The <strong style="color:var(--green)">green preset</strong> shows the kind of market where buying starts winning.</div>
     <div class="presets-btns">
       <button class="preset-btn" onclick="applyPreset('hcol')">HCOL — SF / NYC / Boston</button>
       <button class="preset-btn" onclick="applyPreset('mcol_low')">MCOL low-tax — Austin / Nashville</button>
       <button class="preset-btn" onclick="applyPreset('mcol_high')">MCOL high-tax — NJ / CT</button>
       <button class="preset-btn" onclick="applyPreset('lcol')">LCOL — Midwest / South</button>
+      <button class="preset-btn buy-preset" onclick="applyPreset('buy_friendly')">Buy-friendly market</button>
       <button class="reset-btn" onclick="resetDefaults()">↺ Reset defaults</button>
     </div>
   </div>
@@ -862,6 +895,11 @@ footer .dot { color: var(--gold); font-style: normal; }
 
       <div style="font-size:11px;color:var(--text-muted);margin-top:-10px;margin-bottom:16px;padding:0 4px;font-family:var(--font-mono);">ⓘ Rent scenario assumes you invest the full down payment + closing costs instead of buying.</div>
 
+      <!-- Market context note (shown when rent-to-price ratio is low) -->
+      <div class="market-note" id="marketNote" style="display:none">
+        <strong>Why rent often wins today:</strong> Your rent-to-price ratio is <strong id="rentRatio">—</strong> of home value per month. When stock market returns (~7.5%) outpace home appreciation (~3%) by 4%+, renting and investing the difference tends to win mathematically. Historically, buying starts to dominate once rent exceeds about <strong>0.75% of home value per month</strong> (for this home, ~$<span id="buyThreshold">—</span>/mo).
+      </div>
+
       <!-- Stat cards -->
       <div class="stats-row">
         <div class="stat-card">
@@ -964,6 +1002,7 @@ footer .dot { color: var(--gold); font-style: normal; }
           <p><strong>Capital gains.</strong> 7% transaction cost on sale (roughly 5.5% realtor + 1.5% closing). §121 exclusion applied ($500K MFJ / $250K Single). Excess taxed at a flat 15% long-term capital gains rate for simplicity. Adjust mentally if you expect a higher rate. High earners subject to NIIT (3.8% surcharge) should add that to their marginal rate manually.</p>
           <p><strong>Fair comparison.</strong> Both sides get credit for saved money. Early years when buying costs more → renter invests the annual cost difference. Later years when P&I is locked and rent rises above it → buyer invests the difference. Both pools compound at your investment return. The renter's starting portfolio includes both the down payment and closing costs — cash they didn't have to deploy.</p>
           <p><strong>Exit friction.</strong> On early exit, buyer proceeds are reduced by the friction percentage of home value. This is a simplified proxy for: FIRPTA cash-flow lag (15% withheld on gross sale price — refundable but slow), property manager fees, dual-country tax filings, and remote management costs. Set the percentage based on your actual situation.</p>
+          <p><strong>Why rent often wins in today's market.</strong> Historical data: stocks return ~7–10% nominal, US homes appreciate ~3–4% nominal. When the stock-return advantage exceeds 4% AND rent is below ~0.75% of home value per month, the renter who invests the down payment and cost difference typically comes out ahead. The math shifts toward buying when: rent exceeds 0.8%+ of home value, property taxes are low, mortgage rates drop, or the horizon is very long (25+ years).</p>
           <p><strong>Not modeled:</strong> PMI under 20% down, refinancing, rental conversion income, homestead exemptions, insurance spikes, NIIT surtax, state-level capital gains taxes. These can shift results; they rarely flip the verdict entirely.</p>
         </div>
       </details>
@@ -1017,6 +1056,16 @@ const PRESETS = {
     closingCostPct: 2, monthlyRent: 1800, rentEscalation: 2.5,
     appreciationRate: 3.0, investmentReturn: 7.5, inflationRate: 2.5,
     filingStatus: 'MFJ', marginalTaxRate: 22, stateLocalTax: 8000, exitFrictionPct: 3,
+  },
+  // NEW: Buy-friendly preset — shows the kind of market where buying wins
+  // Rent at 0.95% of home value (roughly the "1% rule" threshold)
+  // Reflects: bought house at pre-2022 price, or market where rents > appreciation
+  buy_friendly: {
+    homePrice: 400000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
+    propertyTaxRate: 1.2, insuranceAnnual: 1800, maintenancePct: 1.0, hoaMonthly: 0,
+    closingCostPct: 2, monthlyRent: 3800, rentEscalation: 3.5,
+    appreciationRate: 4.0, investmentReturn: 7.5, inflationRate: 2.5,
+    filingStatus: 'MFJ', marginalTaxRate: 24, stateLocalTax: 8000, exitFrictionPct: 3,
   },
 };
 
@@ -1185,6 +1234,18 @@ function render() {
   const exitClause = isExitVisa ? `, adjusted for a ${Math.round(visa.pLeave*100)}% chance of early exit in year ${visa.exitYear}` : '';
   document.getElementById('summaryStrip').innerHTML =
     `With your inputs, <strong>${summaryDir}</strong> leaves you approximately <strong>${fmt(deltaAbs)} better off over ${hz} years</strong>${exitClause}. Small changes in assumptions can move this result — try adjusting appreciation and investment return to stress-test it.`;
+
+  // Market context note — show when rent is low relative to home value (rent verdict zone)
+  const rentToPriceRatio = (state.monthlyRent / state.homePrice) * 100; // as %
+  const buyThreshold = Math.round(state.homePrice * 0.0075); // 0.75% rule-of-thumb
+  const marketNote = document.getElementById('marketNote');
+  if (verdict === 'Rent' && rentToPriceRatio < 0.75) {
+    marketNote.style.display = 'block';
+    document.getElementById('rentRatio').textContent = rentToPriceRatio.toFixed(2) + '%';
+    document.getElementById('buyThreshold').textContent = buyThreshold.toLocaleString();
+  } else {
+    marketNote.style.display = 'none';
+  }
 
   // Stat cards
   document.getElementById('statBreakEven').textContent = sim.breakEvenYear ? `Yr ${sim.breakEvenYear}` : 'None';
