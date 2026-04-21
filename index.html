@@ -298,6 +298,15 @@ main {
 }
 .visa-btn:hover:not(.active) { background: var(--cream-2); }
 
+/* Subtle pulse when inputs auto-update from visa click */
+@keyframes fieldFlash {
+  0%   { background: var(--gold-light); }
+  100% { background: var(--white); }
+}
+.field-flash input {
+  animation: fieldFlash 0.8s ease-out;
+}
+
 /* ===== RESULT CARDS ===== */
 .results-col {}
 
@@ -842,6 +851,7 @@ footer .dot { color: var(--gold); font-style: normal; }
               <button class="visa-btn" data-visa="GC" onclick="setVisa(this)">Green Card</button>
               <button class="visa-btn" data-visa="Citizen" onclick="setVisa(this)">Citizen</button>
             </div>
+            <div class="field-tip" style="margin-top:8px">Clicking a status presets stay-probability and exit-friction below. Override either if your situation differs.</div>
           </div>
           <div class="field">
             <label title="Honest bet: odds you're still here at horizon end">P(Staying Full Term) ⓘ</label>
@@ -1001,7 +1011,7 @@ footer .dot { color: var(--gold); font-style: normal; }
           <p><strong>Amortization.</strong> Month-exact principal/interest split, not averaged. Tax savings are estimated using a simplified itemized vs standard deduction comparison ($30K MFJ / $15K Single under current TCJA). Mortgage interest + SALT (capped at $10K federal limit) vs standard deduction — difference taxed at your marginal rate. This is a simplification; actual tax benefit varies with your full return.</p>
           <p><strong>Capital gains.</strong> 7% transaction cost on sale (roughly 5.5% realtor + 1.5% closing). §121 exclusion applied ($500K MFJ / $250K Single). Excess taxed at a flat 15% long-term capital gains rate for simplicity. Adjust mentally if you expect a higher rate. High earners subject to NIIT (3.8% surcharge) should add that to their marginal rate manually.</p>
           <p><strong>Fair comparison.</strong> Both sides get credit for saved money. Early years when buying costs more → renter invests the annual cost difference. Later years when P&I is locked and rent rises above it → buyer invests the difference. Both pools compound at your investment return. The renter's starting portfolio includes both the down payment and closing costs — cash they didn't have to deploy.</p>
-          <p><strong>Exit friction.</strong> On early exit, buyer proceeds are reduced by the friction percentage of home value. This is a simplified proxy for: FIRPTA cash-flow lag (15% withheld on gross sale price — refundable but slow), property manager fees, dual-country tax filings, and remote management costs. Set the percentage based on your actual situation.</p>
+          <p><strong>Visa & exit friction.</strong> Selecting a visa status presets two things: a default stay-probability and a default exit-friction percentage. H1B defaults to 50% stay / 3% friction, GC-pending to 70% / 1%, Green Card to 85% / 0.5%, Citizen to 95% / 0%. Friction is only applied to H1B and GC-pending (where a forced international exit is plausible); on Green Card and Citizen paths, exit is treated as a domestic move with standard selling costs already baked into the 7% transaction fee. Override either value if your personal situation differs — manually-edited values are preserved when you click other visa buttons.</p>
           <p><strong>Why rent often wins in today's market.</strong> Historical data: stocks return ~7–10% nominal, US homes appreciate ~3–4% nominal. When the stock-return advantage exceeds 4% AND rent is below ~0.75% of home value per month, the renter who invests the down payment and cost difference typically comes out ahead. The math shifts toward buying when: rent exceeds 0.8%+ of home value, property taxes are low, mortgage rates drop, or the horizon is very long (25+ years).</p>
           <p><strong>Not modeled:</strong> PMI under 20% down, refinancing, rental conversion income, homestead exemptions, insurance spikes, NIIT surtax, state-level capital gains taxes. These can shift results; they rarely flip the verdict entirely.</p>
         </div>
@@ -1024,8 +1034,18 @@ const DEFAULTS = {
   closingCostPct: 2.0, monthlyRent: 3200, rentEscalation: 3.0,
   appreciationRate: 3.0, investmentReturn: 7.5, inflationRate: 2.5,
   filingStatus: 'MFJ', marginalTaxRate: 24, stateLocalTax: 10000,
-  visaStatus: 'H1B', probabilityStaying: 60, earlyExitYear: 5,
+  visaStatus: 'H1B', probabilityStaying: 50, earlyExitYear: 5,
   exitFrictionPct: 3, horizonYears: 30,
+};
+
+// NEW: defaults that kick in when a visa button is clicked.
+// Stay prob reflects typical mobility-risk for each status.
+// Friction mirrors the field-tip guidance already shown in the UI.
+const VISA_DEFAULTS = {
+  H1B:        { exitFrictionPct: 3,   probabilityStaying: 50 },
+  GC_pending: { exitFrictionPct: 1,   probabilityStaying: 70 },
+  GC:         { exitFrictionPct: 0.5, probabilityStaying: 85 },
+  Citizen:    { exitFrictionPct: 0,   probabilityStaying: 95 },
 };
 
 const PRESETS = {
@@ -1057,9 +1077,6 @@ const PRESETS = {
     appreciationRate: 3.0, investmentReturn: 7.5, inflationRate: 2.5,
     filingStatus: 'MFJ', marginalTaxRate: 22, stateLocalTax: 8000, exitFrictionPct: 3,
   },
-  // NEW: Buy-friendly preset — shows the kind of market where buying wins
-  // Rent at 0.95% of home value (roughly the "1% rule" threshold)
-  // Reflects: bought house at pre-2022 price, or market where rents > appreciation
   buy_friendly: {
     homePrice: 400000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
     propertyTaxRate: 1.2, insuranceAnnual: 1800, maintenancePct: 1.0, hoaMonthly: 0,
@@ -1072,6 +1089,11 @@ const PRESETS = {
 let state = { ...DEFAULTS };
 let chartInstance = null;
 let tableOpen = false;
+
+// NEW: track whether user manually edited visa-linked fields,
+// so we don't clobber their values on subsequent visa clicks.
+let userEditedFriction = false;
+let userEditedProbStay = false;
 
 // ===== HELPERS =====
 function fmt(n) {
@@ -1087,7 +1109,16 @@ function fmtFull(n) {
 }
 function gv(id) { return parseFloat(document.getElementById(id).value) || 0; }
 
-// ===== SIMULATION =====
+function flashField(id) {
+  const wrap = document.getElementById(id).closest('.field');
+  if (!wrap) return;
+  wrap.classList.remove('field-flash');
+  // force reflow so the animation restarts
+  void wrap.offsetWidth;
+  wrap.classList.add('field-flash');
+}
+
+// ===== SIMULATION ===== (unchanged)
 function runSimulation(s) {
   const {
     homePrice, downPaymentPct, mortgageRate, mortgageTerm,
@@ -1154,10 +1185,8 @@ function runSimulation(s) {
     const yearRentMonthly = monthlyRent * Math.pow(1 + rentEscalation / 100, year - 1);
     const annualRentCost = yearRentMonthly * 12;
 
-    // Compound existing savings first (end-of-year convention)
     buyerCashSavings *= (1 + r);
     renterPortfolio *= (1 + r);
-    // Then add this year's cost difference inflow
     const diff = annualOwnerCost - annualRentCost;
     if (diff > 0) { renterPortfolio += diff; }
     else { buyerCashSavings += -diff; }
@@ -1165,7 +1194,7 @@ function runSimulation(s) {
     const grossSellProceeds = homeValue * (1 - sellingCostPct / 100) - mortgageBalance;
     const capitalGain = homeValue - homePrice;
     const taxableGain = Math.max(0, capitalGain - exclusion);
-    const capitalGainsTax = taxableGain * 0.15; // 15% LTCG rate (standard bracket)
+    const capitalGainsTax = taxableGain * 0.15;
     const netSellProceeds = grossSellProceeds - capitalGainsTax;
     const netWorthBuy = netSellProceeds + buyerCashSavings;
     const netWorthRent = renterPortfolio;
@@ -1204,7 +1233,7 @@ function calcVisa(sim, s) {
   return { pStay, pLeave, exitYear, exitData, stayData, adjExitBuy, nriFriction, frictionPct, expectedBuy, expectedRent, delta: expectedBuy - expectedRent };
 }
 
-// ===== RENDER =====
+// ===== RENDER ===== (unchanged)
 function render() {
   const sim = runSimulation(state);
   const visa = calcVisa(sim, state);
@@ -1217,7 +1246,6 @@ function render() {
   const isExitVisa = state.visaStatus === 'H1B' || state.visaStatus === 'GC_pending';
   const hz = state.horizonYears;
 
-  // Verdict card
   document.getElementById('verdictWord').innerHTML = verdict + '<span>.</span>';
   document.getElementById('verdictSub').innerHTML = `${conf} · ${winVerb} wins by <strong>${fmt(deltaAbs)}</strong>`;
   document.getElementById('verdictBuyNW').textContent = fmt(visa.expectedBuy);
@@ -1229,15 +1257,13 @@ function render() {
     assumpEl.textContent = `Full ${hz}-year horizon · no exit friction applied`;
   }
 
-  // Plain-English summary
   const summaryDir = verdict === 'Buy' ? 'buying' : 'renting and investing the difference';
   const exitClause = isExitVisa ? `, adjusted for a ${Math.round(visa.pLeave*100)}% chance of early exit in year ${visa.exitYear}` : '';
   document.getElementById('summaryStrip').innerHTML =
     `With your inputs, <strong>${summaryDir}</strong> leaves you approximately <strong>${fmt(deltaAbs)} better off over ${hz} years</strong>${exitClause}. Small changes in assumptions can move this result — try adjusting appreciation and investment return to stress-test it.`;
 
-  // Market context note — show when rent is low relative to home value (rent verdict zone)
-  const rentToPriceRatio = (state.monthlyRent / state.homePrice) * 100; // as %
-  const buyThreshold = Math.round(state.homePrice * 0.0075); // 0.75% rule-of-thumb
+  const rentToPriceRatio = (state.monthlyRent / state.homePrice) * 100;
+  const buyThreshold = Math.round(state.homePrice * 0.0075);
   const marketNote = document.getElementById('marketNote');
   if (verdict === 'Rent' && rentToPriceRatio < 0.75) {
     marketNote.style.display = 'block';
@@ -1247,7 +1273,6 @@ function render() {
     marketNote.style.display = 'none';
   }
 
-  // Stat cards
   document.getElementById('statBreakEven').textContent = sim.breakEvenYear ? `Yr ${sim.breakEvenYear}` : 'None';
   document.getElementById('statBreakEven').className = 'stat-val';
   document.getElementById('statBreakEvenSub').textContent = sim.breakEvenYear ? 'buy first exceeds rent NW' : `no crossover in ${hz} yrs`;
@@ -1268,7 +1293,6 @@ function render() {
   }
   document.getElementById('statPI').textContent = fmt(sim.monthlyPI);
 
-  // Chart
   const chartYears = sim.years.filter(y => y.year <= hz);
   const labels = chartYears.map(y => y.year);
   const buyData = chartYears.map(y => y.netWorthBuy);
@@ -1281,67 +1305,32 @@ function render() {
     data: {
       labels,
       datasets: [
-        {
-          label: 'Buy',
-          data: buyData,
-          borderColor: '#0e0e2a',
-          backgroundColor: 'rgba(14,14,42,0.04)',
-          borderWidth: 2.5,
-          pointRadius: 0,
-          tension: 0.3,
-          fill: false,
-        },
-        {
-          label: 'Rent',
-          data: rentData,
-          borderColor: '#c4a054',
-          backgroundColor: 'rgba(196,160,84,0.06)',
-          borderWidth: 2.5,
-          pointRadius: 0,
-          tension: 0.3,
-          fill: false,
-        },
+        { label: 'Buy',  data: buyData,  borderColor: '#0e0e2a', backgroundColor: 'rgba(14,14,42,0.04)',  borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+        { label: 'Rent', data: rentData, borderColor: '#c4a054', backgroundColor: 'rgba(196,160,84,0.06)', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
       ],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { labels: { font: { family: 'Inter', size: 12 }, color: '#1a1a2e', boxWidth: 20 } },
         tooltip: {
-          backgroundColor: '#0e0e2a',
-          borderColor: '#c4a054',
-          borderWidth: 1,
-          titleColor: '#c4a054',
-          bodyColor: '#e8dcc0',
-          titleFont: { family: 'Inter', size: 12 },
-          bodyFont: { family: 'ui-monospace, monospace', size: 12 },
-          callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${fmtFull(ctx.parsed.y)}`,
-          },
+          backgroundColor: '#0e0e2a', borderColor: '#c4a054', borderWidth: 1,
+          titleColor: '#c4a054', bodyColor: '#e8dcc0',
+          titleFont: { family: 'Inter', size: 12 }, bodyFont: { family: 'ui-monospace, monospace', size: 12 },
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtFull(ctx.parsed.y)}` },
         },
-        annotation: undefined,
       },
       scales: {
-        x: {
-          ticks: { color: '#7a6f55', font: { size: 11, family: 'ui-monospace, monospace' } },
-          grid: { color: '#e2d8c0' },
-          title: { display: true, text: 'Year', color: '#b8ab90', font: { size: 11 } },
-        },
-        y: {
-          ticks: {
-            color: '#7a6f55',
-            font: { size: 11, family: 'ui-monospace, monospace' },
-            callback: v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${Math.round(v/1e3)}K`,
-          },
-          grid: { color: '#e2d8c0' },
-        },
+        x: { ticks: { color: '#7a6f55', font: { size: 11, family: 'ui-monospace, monospace' } }, grid: { color: '#e2d8c0' },
+             title: { display: true, text: 'Year', color: '#b8ab90', font: { size: 11 } } },
+        y: { ticks: { color: '#7a6f55', font: { size: 11, family: 'ui-monospace, monospace' },
+                       callback: v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${Math.round(v/1e3)}K` },
+             grid: { color: '#e2d8c0' } },
       },
     },
   });
 
-  // Mobility card
   const mobCard = document.getElementById('mobilityCard');
   if (isExitVisa) {
     mobCard.style.display = 'block';
@@ -1360,7 +1349,6 @@ function render() {
     mobCard.style.display = 'none';
   }
 
-  // Table
   renderTable(sim, hz);
 }
 
@@ -1422,12 +1410,29 @@ function setInputs(s) {
   if (s.visaStatus) setVisaByValue(s.visaStatus);
 }
 
+// ===== UPDATED: setVisa now applies VISA_DEFAULTS =====
 function setVisa(btn) {
   document.querySelectorAll('.visa-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.visaStatus = btn.dataset.visa;
+
+  // Apply the defaults for this visa, but only for fields the user hasn't manually edited.
+  const d = VISA_DEFAULTS[state.visaStatus];
+  if (d) {
+    if (!userEditedFriction) {
+      document.getElementById('exitFrictionPct').value = d.exitFrictionPct;
+      flashField('exitFrictionPct');
+    }
+    if (!userEditedProbStay) {
+      document.getElementById('probabilityStaying').value = d.probabilityStaying;
+      flashField('probabilityStaying');
+    }
+  }
+
+  readInputs();
   render();
 }
+
 function setVisaByValue(val) {
   document.querySelectorAll('.visa-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.visa === val);
@@ -1445,6 +1450,9 @@ function applyPreset(key) {
 function resetDefaults() {
   Object.assign(state, DEFAULTS);
   setInputs(DEFAULTS);
+  // Reset the touched flags so visa-driven defaults kick back in.
+  userEditedFriction = false;
+  userEditedProbStay = false;
   render();
 }
 
@@ -1458,6 +1466,10 @@ function toggleTable() {
 document.querySelectorAll('input, select').forEach(el => {
   el.addEventListener('input', () => { readInputs(); render(); });
 });
+
+// NEW: flag fields as user-edited so visa click doesn't overwrite them
+document.getElementById('exitFrictionPct').addEventListener('input', () => { userEditedFriction = true; });
+document.getElementById('probabilityStaying').addEventListener('input', () => { userEditedProbStay = true; });
 
 // ===== INIT =====
 setInputs(DEFAULTS);
