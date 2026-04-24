@@ -298,7 +298,37 @@ main {
 }
 .visa-btn:hover:not(.active) { background: var(--cream-2); }
 
-/* Subtle pulse when inputs auto-update from visa click */
+/* Checkbox row */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+.checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+.checkbox-row label {
+  margin-bottom: 0 !important;
+  cursor: pointer;
+  color: var(--text) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: normal !important;
+}
+
+/* Conditional field states */
+.field-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Subtle pulse when inputs auto-update */
 @keyframes fieldFlash {
   0%   { background: var(--gold-light); }
   100% { background: var(--white); }
@@ -306,6 +336,22 @@ main {
 .field-flash input {
   animation: fieldFlash 0.8s ease-out;
 }
+
+/* Computed-value pill (for LTCG breakdown) */
+.computed-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--cream-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  margin-top: 8px;
+}
+.computed-pill strong { color: var(--gold); }
 
 /* ===== RESULT CARDS ===== */
 .results-col {}
@@ -696,12 +742,12 @@ footer .dot { color: var(--gold); font-style: normal; }
   </div>
   <div class="header-hero">
     <h1>Rent vs Buy <em>Planner</em></h1>
-    <p>This compares buying vs renting over time, including amortization, taxes, investing the difference, and a forced-exit scenario.</p>
+    <p>Compares buying vs renting over time: amortization, PMI, refinance, 2026 tax rules, cap gains brackets, and a forced-exit scenario for NRIs.</p>
     <div class="pills">
       <span class="pill">🔒 No login</span>
       <span class="pill">📊 Detailed cash flow model</span>
-      <span class="pill">🇺🇸 US tax assumptions built in</span>
-      <span class="pill">🛂 Scenario-based</span>
+      <span class="pill">🇺🇸 2026 tax assumptions</span>
+      <span class="pill">🛂 NRI exit modeling</span>
       <span class="pill">🎓 Educational only</span>
     </div>
   </div>
@@ -762,12 +808,51 @@ footer .dot { color: var(--gold); font-style: normal; }
             <div class="field-tip">Typically 1% of home value, averaged</div>
           </div>
           <div class="field">
+            <label title="Reserve for lumpy repairs: roof, HVAC, plumbing. Real homes spike.">Reserves ⓘ</label>
+            <div class="field-wrap"><input type="number" id="reservesPct" step="0.1" min="0"><span class="field-suffix">%/yr</span></div>
+            <div class="field-tip">Captures roof/HVAC/plumbing shocks on top of base maintenance</div>
+          </div>
+          <div class="field">
             <label>HOA</label>
             <div class="field-wrap"><input type="number" id="hoaMonthly" step="50" min="0"><span class="field-suffix">$/mo</span></div>
           </div>
           <div class="field">
             <label>Closing Costs</label>
             <div class="field-wrap"><input type="number" id="closingCostPct" step="0.25" min="0"><span class="field-suffix">%</span></div>
+          </div>
+          <div class="field field-full" id="pmiFieldWrap">
+            <label title="Auto-calculated when DP &lt; 20%. Cancels at 78% LTV.">PMI Rate ⓘ</label>
+            <div class="field-wrap"><input type="number" id="pmiRate" step="0.1" min="0"><span class="field-suffix">%/yr of loan</span></div>
+            <div class="field-tip" id="pmiTip">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refinance (optional) -->
+      <div class="section-card">
+        <div class="section-step">Step 1.5 · Refinance (optional)</div>
+        <div class="section-title">Rate Drop Scenario</div>
+        <div class="section-subtitle">Model a future refi if rates fall</div>
+        <div class="checkbox-row" style="margin-bottom:12px">
+          <input type="checkbox" id="refiEnabled">
+          <label for="refiEnabled">Enable refinance at a specified year</label>
+        </div>
+        <div class="fields-grid" id="refiFields">
+          <div class="field">
+            <label>Refi Year</label>
+            <div class="field-wrap"><input type="number" id="refiYear" step="1" min="1"><span class="field-suffix">yr</span></div>
+          </div>
+          <div class="field">
+            <label>New Rate</label>
+            <div class="field-wrap"><input type="number" id="refiNewRate" step="0.125" min="0"><span class="field-suffix">%</span></div>
+          </div>
+          <div class="field">
+            <label>New Term</label>
+            <div class="field-wrap"><input type="number" id="refiNewTerm" step="5" min="5"><span class="field-suffix">yr</span></div>
+          </div>
+          <div class="field">
+            <label title="Typically 2–3% of loan balance. Paid from savings (opportunity cost).">Refi Cost ⓘ</label>
+            <div class="field-wrap"><input type="number" id="refiClosingCostPct" step="0.25" min="0"><span class="field-suffix">%</span></div>
           </div>
         </div>
       </div>
@@ -812,9 +897,9 @@ footer .dot { color: var(--gold); font-style: normal; }
 
       <!-- Taxes -->
       <div class="section-card">
-        <div class="section-step">Step 4 · Taxes</div>
+        <div class="section-step">Step 4 · Taxes (2026 rules)</div>
         <div class="section-title">Tax Situation</div>
-        <div class="section-subtitle">Mortgage interest deduction math</div>
+        <div class="section-subtitle">Itemized vs standard deduction + capital gains</div>
         <div class="fields-grid">
           <div class="field">
             <label>Filing Status</label>
@@ -826,13 +911,34 @@ footer .dot { color: var(--gold); font-style: normal; }
             </div>
           </div>
           <div class="field">
-            <label title="For NIIT on cap gains, add ~3.8% to effective rate manually">Marginal Tax Rate ⓘ</label>
+            <label title="Federal marginal rate only">Marginal Tax Rate ⓘ</label>
             <div class="field-wrap"><input type="number" id="marginalTaxRate" step="1" min="0" max="60"><span class="field-suffix">%</span></div>
           </div>
           <div class="field field-full">
-            <label title="Counts toward $10K SALT cap with property tax">State + Local Tax ⓘ</label>
+            <label title="Counts toward SALT cap with property tax">State + Local Income Tax ⓘ</label>
             <div class="field-wrap"><input type="number" id="stateLocalTax" step="1000" min="0"><span class="field-suffix">$/yr</span></div>
-            <div class="field-tip">Counts toward $10K SALT cap with property tax</div>
+          </div>
+          <div class="field">
+            <label title="OBBBA raised cap from $10K to $40K in 2025, indexed 1%/yr. $40,400 for 2026. Phases down above $505K MAGI.">SALT Cap ⓘ</label>
+            <div class="field-wrap"><input type="number" id="saltCap" step="5000" min="0"><span class="field-suffix">$</span></div>
+            <div class="field-tip">$40,400 default (OBBBA 2026). Use $10K if pre-2025 rules apply or MAGI ≥ $605K.</div>
+          </div>
+          <div class="field">
+            <label title="Your state's long-term capital gains rate on real estate">State Cap Gains Rate ⓘ</label>
+            <div class="field-wrap"><input type="number" id="stateLTCGRate" step="0.5" min="0"><span class="field-suffix">%</span></div>
+            <div class="field-tip">CA: 13.3% · NY: ~10.9% · TX/FL/WA: 0%</div>
+          </div>
+          <div class="field field-full">
+            <div class="checkbox-row">
+              <input type="checkbox" id="niitApplies">
+              <label for="niitApplies">Apply NIIT (3.8% on investment income, MAGI &gt; $250K MFJ / $200K Single)</label>
+            </div>
+          </div>
+          <div class="field field-full">
+            <div class="computed-pill" id="ltcgComputed">
+              Effective cap gains rate: <strong id="ltcgComputedVal">—</strong>
+              <span style="color:var(--text-faint)" id="ltcgComputedBreakdown">—</span>
+            </div>
           </div>
         </div>
       </div>
@@ -862,9 +968,14 @@ footer .dot { color: var(--gold); font-style: normal; }
             <div class="field-wrap"><input type="number" id="earlyExitYear" step="1" min="1"><span class="field-suffix">yr</span></div>
           </div>
           <div class="field field-full">
-            <label title="Use to model selling costs, tax drag, or managing property after leaving. Default 3% for H1B; ~1% for GC-pending; &lt;1% for stable statuses.">Exit Friction (sale + tax + logistics) ⓘ</label>
+            <label title="FIRPTA cash-flow drag, remote property costs, rushed sale discount. % of home value at exit.">Exit Friction (% of home value) ⓘ</label>
             <div class="field-wrap"><input type="number" id="exitFrictionPct" step="0.5" min="0"><span class="field-suffix">%</span></div>
             <div class="field-tip">3% for H1B · ~1% for GC-pending · &lt;1% for stable statuses</div>
+          </div>
+          <div class="field field-full">
+            <label title="One-time property-sale logistics: FIRPTA paperwork, cross-border CPA for sale year, wire fees for proceeds, power-of-attorney setup.">Exit Flat Costs (buy path only) ⓘ</label>
+            <div class="field-wrap"><input type="number" id="exitFlatCost" step="500" min="0"><span class="field-suffix">$</span></div>
+            <div class="field-tip">Property-specific: FIRPTA paperwork, sale-year CPA, wire fees, power-of-attorney. Renter walking away doesn't trigger these.</div>
           </div>
           <div class="field field-full">
             <label>Analysis Horizon</label>
@@ -905,7 +1016,7 @@ footer .dot { color: var(--gold); font-style: normal; }
 
       <div style="font-size:11px;color:var(--text-muted);margin-top:-10px;margin-bottom:16px;padding:0 4px;font-family:var(--font-mono);">ⓘ Rent scenario assumes you invest the full down payment + closing costs instead of buying.</div>
 
-      <!-- Market context note (shown when rent-to-price ratio is low) -->
+      <!-- Market context note -->
       <div class="market-note" id="marketNote" style="display:none">
         <strong>Why rent often wins today:</strong> Your rent-to-price ratio is <strong id="rentRatio">—</strong> of home value per month. When stock market returns (~7.5%) outpace home appreciation (~3%) by 4%+, renting and investing the difference tends to win mathematically. Historically, buying starts to dominate once rent exceeds about <strong>0.75% of home value per month</strong> (for this home, ~$<span id="buyThreshold">—</span>/mo).
       </div>
@@ -930,7 +1041,7 @@ footer .dot { color: var(--gold); font-style: normal; }
         <div class="stat-card">
           <div class="stat-label">Monthly P&I</div>
           <div class="stat-val" id="statPI">—</div>
-          <div class="stat-sub">locked for life of loan</div>
+          <div class="stat-sub" id="statPISub">locked for life of loan</div>
         </div>
       </div>
 
@@ -958,10 +1069,11 @@ footer .dot { color: var(--gold); font-style: normal; }
           </div>
           <div class="path-box path-b">
             <div class="path-label" id="pathBLabel">Path B · Exit Yr — · —%</div>
-            <div class="path-desc">Forced sale scenario. Friction % approximates FIRPTA cash-flow lag, dual-country tax filings, and remote management costs.</div>
+            <div class="path-desc">Forced sale scenario. Friction % approximates FIRPTA cash-flow lag, rushed-sale discount, and remote logistics. Flat costs cover dual-country tax prep, cross-border CPA, and wire fees.</div>
             <div class="path-row"><span class="path-row-label">Buy NW (post-friction)</span><span class="path-row-val" id="pathBBuy">—</span></div>
             <div class="path-row"><span class="path-row-label">Rent NW</span><span class="path-row-val" id="pathBRent">—</span></div>
-            <div class="path-row friction"><span>Exit friction (<span id="pathBFrictionPct">—</span>%)</span><span id="pathBFriction">—</span></div>
+            <div class="path-row friction"><span>Friction (<span id="pathBFrictionPct">—</span>% of home value)</span><span id="pathBFriction">—</span></div>
+            <div class="path-row friction"><span>Flat exit costs</span><span id="pathBFlatCost">—</span></div>
           </div>
         </div>
         <div class="ev-note" id="evNote">—</div>
@@ -984,6 +1096,7 @@ footer .dot { color: var(--gold); font-style: normal; }
                 <th>Home Val</th>
                 <th>Mortgage</th>
                 <th>Interest/yr</th>
+                <th>PMI/yr</th>
                 <th>Own Cost/yr</th>
                 <th>Rent/mo</th>
                 <th>Rent Cost/yr</th>
@@ -1008,12 +1121,16 @@ footer .dot { color: var(--gold); font-style: normal; }
           <span style="font-size:11px;color:var(--text-faint)">Click to expand</span>
         </summary>
         <div class="method-body">
-          <p><strong>Amortization.</strong> Month-exact principal/interest split, not averaged. Tax savings are estimated using a simplified itemized vs standard deduction comparison ($30K MFJ / $15K Single under current TCJA). Mortgage interest + SALT (capped at $10K federal limit) vs standard deduction — difference taxed at your marginal rate. This is a simplification; actual tax benefit varies with your full return.</p>
-          <p><strong>Capital gains.</strong> 7% transaction cost on sale (roughly 5.5% realtor + 1.5% closing). §121 exclusion applied ($500K MFJ / $250K Single). Excess taxed at a flat 15% long-term capital gains rate for simplicity. Adjust mentally if you expect a higher rate. High earners subject to NIIT (3.8% surcharge) should add that to their marginal rate manually.</p>
-          <p><strong>Fair comparison.</strong> Both sides get credit for saved money. Early years when buying costs more → renter invests the annual cost difference. Later years when P&I is locked and rent rises above it → buyer invests the difference. Both pools compound at your investment return. The renter's starting portfolio includes both the down payment and closing costs — cash they didn't have to deploy.</p>
-          <p><strong>Visa & exit friction.</strong> Selecting a visa status presets two things: a default stay-probability and a default exit-friction percentage. H1B defaults to 50% stay / 3% friction, GC-pending to 70% / 1%, Green Card to 85% / 0.5%, Citizen to 95% / 0%. Friction is only applied to H1B and GC-pending (where a forced international exit is plausible); on Green Card and Citizen paths, exit is treated as a domestic move with standard selling costs already baked into the 7% transaction fee. Override either value if your personal situation differs — manually-edited values are preserved when you click other visa buttons.</p>
-          <p><strong>Why rent often wins in today's market.</strong> Historical data: stocks return ~7–10% nominal, US homes appreciate ~3–4% nominal. When the stock-return advantage exceeds 4% AND rent is below ~0.75% of home value per month, the renter who invests the down payment and cost difference typically comes out ahead. The math shifts toward buying when: rent exceeds 0.8%+ of home value, property taxes are low, mortgage rates drop, or the horizon is very long (25+ years).</p>
-          <p><strong>Not modeled:</strong> PMI under 20% down, refinancing, rental conversion income, homestead exemptions, insurance spikes, NIIT surtax, state-level capital gains taxes. These can shift results; they rarely flip the verdict entirely.</p>
+          <p><strong>Amortization.</strong> Month-exact principal/interest split, not averaged. PMI auto-calculated when down payment is below 20%: charged at the PMI rate on the current mortgage balance each year, cancels automatically once the balance drops to 78% of the original home price (per the Homeowners Protection Act). Refinance is optional: if enabled, at the specified year the model takes the current mortgage balance and rebuilds amortization at the new rate and term. Refi closing costs are pulled from the buyer's investment savings, which is the honest opportunity-cost treatment.</p>
+          <p><strong>Standard deduction.</strong> 2026 values: $32,200 MFJ, $16,100 Single. These were increased permanently under OBBBA (July 2025) and continue to inflation-adjust annually.</p>
+          <p><strong>SALT cap.</strong> Default $40,400 under OBBBA for tax year 2026, applied to property tax plus state/local income tax combined. The cap increases 1% annually through 2029 ($40,804 in 2027, $41,212 in 2028, $41,624 in 2029) then reverts to $10K in 2030. Phases down for MAGI above $505K in 2026 (30 cents per dollar over), floored at $10K — effectively back to $10K above $605K MAGI. Override the field if you're in phase-out territory or modeling pre-2025 rules.</p>
+          <p><strong>Itemized deduction benefit.</strong> Each year: mortgage interest plus PMI premium plus capped SALT is compared to the standard deduction. Only the excess is taxed at your marginal rate — that's the real benefit. PMI premium deductibility was reinstated under OBBBA for tax year 2026 onward (it had been allowed to lapse after 2021). In low-interest later years, the benefit often disappears entirely because the standard deduction dominates.</p>
+          <p><strong>Capital gains on sale.</strong> 7% transaction cost on gross sale (realtor plus closing). §121 exclusion applied: $500K MFJ / $250K Single. The remaining taxable gain is multiplied by an effective LTCG rate that combines: a federal bracket chosen from your marginal rate (0% if marginal ≤ 12%, 15% if 22–32%, 20% if 35%+), NIIT of 3.8% if the checkbox is on, and your state capital gains rate. The computed rate shows in the Tax section so you can sanity-check it.</p>
+          <p><strong>Owner cost realism.</strong> Annual owner cost sums P&I (or post-refi P&I), property tax on current home value, insurance inflated annually, maintenance at your specified rate, HOA inflated annually, PMI if applicable, a reserves line for lumpy repairs (roof, HVAC, sewer line, special assessments), minus tax savings. The reserves field defaults to 0.25% of home value but real outcomes vary a lot — a new build eats near zero; a 40-year-old house with an aging roof can run 1%+.</p>
+          <p><strong>Fair comparison on the rent side.</strong> Both scenarios get credit for cash not spent. Early years when buying costs more, the renter invests the cost difference. Later years when P&I is locked and rent rises above ownership cost, the buyer invests the difference. Both pools compound at the investment return. The renter's starting portfolio includes the down payment and closing costs — cash they didn't deploy.</p>
+          <p><strong>Visa and exit modeling.</strong> Selecting a visa status presets stay-probability and exit-friction percent. H1B defaults to 50% stay / 3% friction, GC-pending to 70% / 1%, Green Card to 85% / 0.5%, Citizen to 95% / 0%. Friction and flat exit costs are only applied to H1B and GC-pending (where a forced international exit is plausible); Green Card and Citizen exits are treated as domestic moves with the standard 7% transaction cost already baked into the base sale math. Override any value if your situation differs — manually-edited fields are preserved when you click other visa buttons.</p>
+          <p><strong>Why rent often wins in today's market.</strong> Stocks return ~7–10% nominal, US homes appreciate ~3–4% nominal. When the stock advantage exceeds 4% AND rent is below ~0.75% of home value per month, the renter who invests the down payment and cost difference typically wins. The math shifts toward buying when rent exceeds 0.8% of home value, property taxes are low, mortgage rates drop (or you refi), or the horizon is very long.</p>
+          <p><strong>Not modeled:</strong> rental conversion income if you keep the property, homestead exemptions, state income tax on rental income if you convert, deducibility quirks for high earners, AMT, insurance spikes from wildfire/flood zones, property tax reassessment triggers (California Prop 13 vs everywhere else), full FIRPTA mechanics (the friction % is a proxy for the cash-flow lag, not the actual withholding). Consult a cross-border CPA for any of these before making the call.</p>
         </div>
       </details>
 
@@ -1030,17 +1147,17 @@ footer .dot { color: var(--gold); font-style: normal; }
 // ===== STATE =====
 const DEFAULTS = {
   homePrice: 500000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
-  propertyTaxRate: 1.5, insuranceAnnual: 1800, maintenancePct: 1.0, hoaMonthly: 0,
-  closingCostPct: 2.0, monthlyRent: 3200, rentEscalation: 3.0,
+  propertyTaxRate: 1.5, insuranceAnnual: 1800, maintenancePct: 1.0, reservesPct: 0.25,
+  hoaMonthly: 0, closingCostPct: 2.0, pmiRate: 0.75,
+  refiEnabled: false, refiYear: 5, refiNewRate: 5.0, refiNewTerm: 30, refiClosingCostPct: 2.0,
+  monthlyRent: 3200, rentEscalation: 3.0,
   appreciationRate: 3.0, investmentReturn: 7.5, inflationRate: 2.5,
   filingStatus: 'MFJ', marginalTaxRate: 24, stateLocalTax: 10000,
+  saltCap: 40400, stateLTCGRate: 0, niitApplies: false,
   visaStatus: 'H1B', probabilityStaying: 50, earlyExitYear: 5,
-  exitFrictionPct: 3, horizonYears: 30,
+  exitFrictionPct: 3, exitFlatCost: 5000, horizonYears: 30,
 };
 
-// NEW: defaults that kick in when a visa button is clicked.
-// Stay prob reflects typical mobility-risk for each status.
-// Friction mirrors the field-tip guidance already shown in the UI.
 const VISA_DEFAULTS = {
   H1B:        { exitFrictionPct: 3,   probabilityStaying: 50 },
   GC_pending: { exitFrictionPct: 1,   probabilityStaying: 70 },
@@ -1051,38 +1168,48 @@ const VISA_DEFAULTS = {
 const PRESETS = {
   hcol: {
     homePrice: 1200000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
-    propertyTaxRate: 1.2, insuranceAnnual: 3000, maintenancePct: 1.0, hoaMonthly: 400,
-    closingCostPct: 2, monthlyRent: 5500, rentEscalation: 3.5,
+    propertyTaxRate: 1.2, insuranceAnnual: 3000, maintenancePct: 1.0, reservesPct: 0.25,
+    hoaMonthly: 400, closingCostPct: 2, pmiRate: 0.75,
+    monthlyRent: 5500, rentEscalation: 3.5,
     appreciationRate: 3.5, investmentReturn: 7.5, inflationRate: 2.5,
-    filingStatus: 'MFJ', marginalTaxRate: 32, stateLocalTax: 25000, exitFrictionPct: 3,
+    filingStatus: 'MFJ', marginalTaxRate: 32, stateLocalTax: 25000,
+    saltCap: 40400, stateLTCGRate: 9.3, niitApplies: true, exitFrictionPct: 3,
   },
   mcol_low: {
     homePrice: 500000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
-    propertyTaxRate: 1.8, insuranceAnnual: 2400, maintenancePct: 1.0, hoaMonthly: 0,
-    closingCostPct: 2, monthlyRent: 2400, rentEscalation: 3.0,
+    propertyTaxRate: 1.8, insuranceAnnual: 2400, maintenancePct: 1.0, reservesPct: 0.25,
+    hoaMonthly: 0, closingCostPct: 2, pmiRate: 0.75,
+    monthlyRent: 2400, rentEscalation: 3.0,
     appreciationRate: 3.5, investmentReturn: 7.5, inflationRate: 2.5,
-    filingStatus: 'MFJ', marginalTaxRate: 24, stateLocalTax: 0, exitFrictionPct: 3,
+    filingStatus: 'MFJ', marginalTaxRate: 24, stateLocalTax: 0,
+    saltCap: 40400, stateLTCGRate: 0, niitApplies: false, exitFrictionPct: 3,
   },
   mcol_high: {
     homePrice: 500000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
-    propertyTaxRate: 2.2, insuranceAnnual: 2200, maintenancePct: 1.0, hoaMonthly: 0,
-    closingCostPct: 2, monthlyRent: 3200, rentEscalation: 3.0,
+    propertyTaxRate: 2.2, insuranceAnnual: 2200, maintenancePct: 1.0, reservesPct: 0.25,
+    hoaMonthly: 0, closingCostPct: 2, pmiRate: 0.75,
+    monthlyRent: 3200, rentEscalation: 3.0,
     appreciationRate: 3.0, investmentReturn: 7.5, inflationRate: 2.5,
-    filingStatus: 'MFJ', marginalTaxRate: 32, stateLocalTax: 18000, exitFrictionPct: 3,
+    filingStatus: 'MFJ', marginalTaxRate: 32, stateLocalTax: 18000,
+    saltCap: 40400, stateLTCGRate: 10.9, niitApplies: true, exitFrictionPct: 3,
   },
   lcol: {
     homePrice: 300000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
-    propertyTaxRate: 1.5, insuranceAnnual: 1500, maintenancePct: 1.0, hoaMonthly: 0,
-    closingCostPct: 2, monthlyRent: 1800, rentEscalation: 2.5,
+    propertyTaxRate: 1.5, insuranceAnnual: 1500, maintenancePct: 1.0, reservesPct: 0.25,
+    hoaMonthly: 0, closingCostPct: 2, pmiRate: 0.75,
+    monthlyRent: 1800, rentEscalation: 2.5,
     appreciationRate: 3.0, investmentReturn: 7.5, inflationRate: 2.5,
-    filingStatus: 'MFJ', marginalTaxRate: 22, stateLocalTax: 8000, exitFrictionPct: 3,
+    filingStatus: 'MFJ', marginalTaxRate: 22, stateLocalTax: 8000,
+    saltCap: 40400, stateLTCGRate: 4, niitApplies: false, exitFrictionPct: 3,
   },
   buy_friendly: {
     homePrice: 400000, downPaymentPct: 20, mortgageRate: 6.5, mortgageTerm: 30,
-    propertyTaxRate: 1.2, insuranceAnnual: 1800, maintenancePct: 1.0, hoaMonthly: 0,
-    closingCostPct: 2, monthlyRent: 3800, rentEscalation: 3.5,
+    propertyTaxRate: 1.2, insuranceAnnual: 1800, maintenancePct: 1.0, reservesPct: 0.25,
+    hoaMonthly: 0, closingCostPct: 2, pmiRate: 0.75,
+    monthlyRent: 3800, rentEscalation: 3.5,
     appreciationRate: 4.0, investmentReturn: 7.5, inflationRate: 2.5,
-    filingStatus: 'MFJ', marginalTaxRate: 24, stateLocalTax: 8000, exitFrictionPct: 3,
+    filingStatus: 'MFJ', marginalTaxRate: 24, stateLocalTax: 8000,
+    saltCap: 40400, stateLTCGRate: 5, niitApplies: false, exitFrictionPct: 3,
   },
 };
 
@@ -1090,8 +1217,7 @@ let state = { ...DEFAULTS };
 let chartInstance = null;
 let tableOpen = false;
 
-// NEW: track whether user manually edited visa-linked fields,
-// so we don't clobber their values on subsequent visa clicks.
+// Track manually-edited visa-linked fields
 let userEditedFriction = false;
 let userEditedProbStay = false;
 
@@ -1108,40 +1234,60 @@ function fmtFull(n) {
   return '$' + Math.round(n).toLocaleString('en-US');
 }
 function gv(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function gc(id) { return document.getElementById(id).checked; }
 
 function flashField(id) {
   const wrap = document.getElementById(id).closest('.field');
   if (!wrap) return;
   wrap.classList.remove('field-flash');
-  // force reflow so the animation restarts
   void wrap.offsetWidth;
   wrap.classList.add('field-flash');
 }
 
-// ===== SIMULATION ===== (unchanged)
+// ===== TAX HELPERS =====
+function computeLTCGRate(marginalTaxRate, niitApplies, stateLTCGRate) {
+  // Federal LTCG bracket derived from marginal rate (proxy for taxable income)
+  let fed;
+  if (marginalTaxRate <= 12) fed = 0;
+  else if (marginalTaxRate <= 32) fed = 15;
+  else fed = 20;
+  const niit = niitApplies ? 3.8 : 0;
+  return { fed, niit, state: stateLTCGRate, total: fed + niit + stateLTCGRate };
+}
+
+// ===== SIMULATION =====
 function runSimulation(s) {
   const {
     homePrice, downPaymentPct, mortgageRate, mortgageTerm,
-    propertyTaxRate, insuranceAnnual, maintenancePct, hoaMonthly, closingCostPct,
+    propertyTaxRate, insuranceAnnual, maintenancePct, reservesPct, hoaMonthly,
+    closingCostPct, pmiRate,
+    refiEnabled, refiYear, refiNewRate, refiNewTerm, refiClosingCostPct,
     monthlyRent, rentEscalation, appreciationRate, investmentReturn, inflationRate,
-    filingStatus, marginalTaxRate, stateLocalTax, horizonYears
+    filingStatus, marginalTaxRate, stateLocalTax, saltCap,
+    stateLTCGRate, niitApplies, horizonYears
   } = s;
 
-  const loanAmount = homePrice * (1 - downPaymentPct / 100);
+  const origLoanAmount = homePrice * (1 - downPaymentPct / 100);
   const downPayment = homePrice * (downPaymentPct / 100);
   const closingCostsBuyer = homePrice * (closingCostPct / 100);
-  const monthlyRate = mortgageRate / 100 / 12;
-  const n = mortgageTerm * 12;
-  const monthlyPI = loanAmount > 0
-    ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1)
-    : 0;
 
-  const stdDeduction = filingStatus === 'MFJ' ? 30000 : 15000;
-  const saltCap = 10000;
+  // 2026 standard deduction
+  const stdDeduction = filingStatus === 'MFJ' ? 32200 : 16100;
   const sellingCostPct = 7;
   const exclusion = filingStatus === 'MFJ' ? 500000 : 250000;
+  const ltcg = computeLTCGRate(marginalTaxRate, niitApplies, stateLTCGRate);
+  const effLTCGRate = ltcg.total / 100;
 
-  let mortgageBalance = loanAmount;
+  // Initial mortgage setup
+  let mortgageBalance = origLoanAmount;
+  let currentMonthlyRate = mortgageRate / 100 / 12;
+  let currentMonthlyPI = origLoanAmount > 0
+    ? origLoanAmount * (currentMonthlyRate * Math.pow(1 + currentMonthlyRate, mortgageTerm * 12))
+      / (Math.pow(1 + currentMonthlyRate, mortgageTerm * 12) - 1)
+    : 0;
+  let effectiveTermEndYear = mortgageTerm; // year loan fully amortizes
+  let hasRefinanced = false;
+
   let homeValue = homePrice;
   let buyerCashSavings = 0;
   let renterPortfolio = downPayment + closingCostsBuyer;
@@ -1156,18 +1302,45 @@ function runSimulation(s) {
     netWorthBuy: Math.round(y0NetSell), netWorthRent: Math.round(renterPortfolio),
     rent: Math.round(monthlyRent), annualOwnerCost: 0, annualRentCost: 0,
     interestPaidYear: 0, principalPaidYear: 0, taxSavings: 0,
-    piMonthly: Math.round(monthlyPI),
+    pmiPaidYear: 0, piMonthly: Math.round(currentMonthlyPI),
   });
 
   for (let year = 1; year <= horizonYears; year++) {
-    let yearInterest = 0, yearPrincipal = 0;
+    // Refinance event at start of refiYear
+    if (refiEnabled && !hasRefinanced && year === refiYear && mortgageBalance > 0) {
+      const refiClosingCost = mortgageBalance * (refiClosingCostPct / 100);
+      // Pay from savings if possible; roll remainder into new loan balance
+      if (buyerCashSavings >= refiClosingCost) {
+        buyerCashSavings -= refiClosingCost;
+      } else {
+        const rolledIn = refiClosingCost - buyerCashSavings;
+        buyerCashSavings = 0;
+        mortgageBalance += rolledIn;
+      }
+      const newN = refiNewTerm * 12;
+      currentMonthlyRate = refiNewRate / 100 / 12;
+      currentMonthlyPI = mortgageBalance * (currentMonthlyRate * Math.pow(1 + currentMonthlyRate, newN))
+        / (Math.pow(1 + currentMonthlyRate, newN) - 1);
+      effectiveTermEndYear = year - 1 + refiNewTerm;
+      hasRefinanced = true;
+    }
+
+    let yearInterest = 0, yearPrincipal = 0, yearPMI = 0;
+
     for (let m = 0; m < 12; m++) {
-      if (mortgageBalance > 0 && year <= mortgageTerm) {
-        const interestPmt = mortgageBalance * monthlyRate;
-        const principalPmt = Math.min(monthlyPI - interestPmt, mortgageBalance);
+      if (mortgageBalance > 0.01 && year <= effectiveTermEndYear) {
+        const interestPmt = mortgageBalance * currentMonthlyRate;
+        const principalPmt = Math.min(currentMonthlyPI - interestPmt, mortgageBalance);
         yearInterest += interestPmt;
         yearPrincipal += principalPmt;
         mortgageBalance -= principalPmt;
+
+        // PMI: charge monthly on current balance while LTV > 78% of ORIGINAL home price
+        // Only applies if down payment was under 20%
+        if (downPaymentPct < 20 && (mortgageBalance / homePrice) > 0.78) {
+          const monthlyPMI = (mortgageBalance * (pmiRate / 100)) / 12;
+          yearPMI += monthlyPMI;
+        }
       }
     }
     if (mortgageBalance < 0.01) mortgageBalance = 0;
@@ -1176,12 +1349,20 @@ function runSimulation(s) {
     const propertyTax = homeValue * (propertyTaxRate / 100);
     const insurance = insuranceAnnual * Math.pow(1 + inflationRate / 100, year);
     const maintenance = homeValue * (maintenancePct / 100);
+    const reserves = homeValue * (reservesPct / 100);
     const hoaAnnual = hoaMonthly * 12 * Math.pow(1 + inflationRate / 100, year);
+
+    // Tax benefit: itemized (mortgage interest + PMI + capped SALT) vs standard deduction
+    // PMI premium deductibility reinstated under OBBBA for tax year 2026 onward
     const saltAvailable = Math.min(saltCap, propertyTax + stateLocalTax);
-    const itemized = yearInterest + saltAvailable;
+    const itemized = yearInterest + yearPMI + saltAvailable;
     const taxSavings = Math.max(0, itemized - stdDeduction) * (marginalTaxRate / 100);
-    const piAnnual = year <= mortgageTerm ? monthlyPI * 12 : 0;
-    const annualOwnerCost = piAnnual + propertyTax + insurance + maintenance + hoaAnnual - taxSavings;
+
+    const piAnnual = (mortgageBalance > 0 || year <= effectiveTermEndYear) && (year <= effectiveTermEndYear) ? currentMonthlyPI * 12 : 0;
+    // Note: if loan is fully paid off mid-year, piAnnual still reflects the payments made. The mortgageBalance check handles end-of-loan.
+    const actualPI = yearInterest + yearPrincipal;
+
+    const annualOwnerCost = actualPI + propertyTax + insurance + maintenance + reserves + hoaAnnual + yearPMI - taxSavings;
     const yearRentMonthly = monthlyRent * Math.pow(1 + rentEscalation / 100, year - 1);
     const annualRentCost = yearRentMonthly * 12;
 
@@ -1194,7 +1375,7 @@ function runSimulation(s) {
     const grossSellProceeds = homeValue * (1 - sellingCostPct / 100) - mortgageBalance;
     const capitalGain = homeValue - homePrice;
     const taxableGain = Math.max(0, capitalGain - exclusion);
-    const capitalGainsTax = taxableGain * 0.15;
+    const capitalGainsTax = taxableGain * effLTCGRate;
     const netSellProceeds = grossSellProceeds - capitalGainsTax;
     const netWorthBuy = netSellProceeds + buyerCashSavings;
     const netWorthRent = renterPortfolio;
@@ -1207,7 +1388,8 @@ function runSimulation(s) {
       rent: Math.round(yearRentMonthly), annualOwnerCost: Math.round(annualOwnerCost),
       annualRentCost: Math.round(annualRentCost), interestPaidYear: Math.round(yearInterest),
       principalPaidYear: Math.round(yearPrincipal), taxSavings: Math.round(taxSavings),
-      propertyTax: Math.round(propertyTax), piMonthly: year <= mortgageTerm ? Math.round(monthlyPI) : 0,
+      pmiPaidYear: Math.round(yearPMI),
+      propertyTax: Math.round(propertyTax), piMonthly: mortgageBalance > 0 ? Math.round(currentMonthlyPI) : 0,
     });
   }
 
@@ -1216,7 +1398,13 @@ function runSimulation(s) {
     if (years[i].netWorthBuy >= years[i].netWorthRent) { breakEvenYear = years[i].year; break; }
   }
 
-  return { years, loanAmount, downPayment, closingCostsBuyer, monthlyPI, breakEvenYear };
+  return { years, loanAmount: origLoanAmount, downPayment, closingCostsBuyer,
+    initialMonthlyPI: origLoanAmount > 0
+      ? origLoanAmount * ((mortgageRate/100/12) * Math.pow(1 + mortgageRate/100/12, mortgageTerm*12))
+        / (Math.pow(1 + mortgageRate/100/12, mortgageTerm*12) - 1)
+      : 0,
+    postRefiMonthlyPI: hasRefinanced ? currentMonthlyPI : null,
+    breakEvenYear, ltcg, hasRefinanced };
 }
 
 function calcVisa(sim, s) {
@@ -1225,16 +1413,25 @@ function calcVisa(sim, s) {
   const exitYear = Math.min(Math.max(1, s.earlyExitYear), s.horizonYears);
   const stayData = sim.years[s.horizonYears] || sim.years[sim.years.length - 1];
   const exitData = sim.years[exitYear] || sim.years[sim.years.length - 1];
-  const frictionPct = (s.visaStatus === 'H1B' || s.visaStatus === 'GC_pending') ? s.exitFrictionPct : 0;
+  const applyExitCosts = (s.visaStatus === 'H1B' || s.visaStatus === 'GC_pending');
+  const frictionPct = applyExitCosts ? s.exitFrictionPct : 0;
+  const flatCost = applyExitCosts ? s.exitFlatCost : 0;
   const nriFriction = exitData.homeValue * (frictionPct / 100);
-  const adjExitBuy = exitData.netWorthBuy - nriFriction;
+  const adjExitBuy = exitData.netWorthBuy - nriFriction - flatCost;
+  // Flat cost is property-specific (FIRPTA paperwork, sale-year cross-border CPA,
+  // wire fees for sale proceeds). Pure renter doesn't trigger these.
+  const adjExitRent = exitData.netWorthRent;
   const expectedBuy = pStay * stayData.netWorthBuy + pLeave * adjExitBuy;
-  const expectedRent = pStay * stayData.netWorthRent + pLeave * exitData.netWorthRent;
-  return { pStay, pLeave, exitYear, exitData, stayData, adjExitBuy, nriFriction, frictionPct, expectedBuy, expectedRent, delta: expectedBuy - expectedRent };
+  const expectedRent = pStay * stayData.netWorthRent + pLeave * adjExitRent;
+  return { pStay, pLeave, exitYear, exitData, stayData, adjExitBuy, adjExitRent,
+    nriFriction, frictionPct, flatCost, expectedBuy, expectedRent,
+    delta: expectedBuy - expectedRent };
 }
 
-// ===== RENDER ===== (unchanged)
+// ===== RENDER =====
 function render() {
+  updateConditionalUI();
+
   const sim = runSimulation(state);
   const visa = calcVisa(sim, state);
 
@@ -1250,11 +1447,14 @@ function render() {
   document.getElementById('verdictSub').innerHTML = `${conf} · ${winVerb} wins by <strong>${fmt(deltaAbs)}</strong>`;
   document.getElementById('verdictBuyNW').textContent = fmt(visa.expectedBuy);
   document.getElementById('verdictRentNW').textContent = fmt(visa.expectedRent);
+
   const assumpEl = document.getElementById('verdictAssumptions');
+  const refiNote = sim.hasRefinanced ? ` · refi at yr ${state.refiYear} to ${state.refiNewRate}%` : '';
+  const pmiNote = state.downPaymentPct < 20 ? ` · PMI ${state.pmiRate}% until 78% LTV` : '';
   if (isExitVisa) {
-    assumpEl.textContent = `Assumes: ${Math.round(visa.pStay*100)}% chance you stay · exit in year ${visa.exitYear} · ${state.exitFrictionPct}% exit friction`;
+    assumpEl.textContent = `${Math.round(visa.pStay*100)}% stay · exit yr ${visa.exitYear} · ${state.exitFrictionPct}% friction + $${state.exitFlatCost.toLocaleString()} flat${refiNote}${pmiNote}`;
   } else {
-    assumpEl.textContent = `Full ${hz}-year horizon · no exit friction applied`;
+    assumpEl.textContent = `Full ${hz}-year horizon${refiNote}${pmiNote}`;
   }
 
   const summaryDir = verdict === 'Buy' ? 'buying' : 'renting and investing the difference';
@@ -1291,8 +1491,24 @@ function render() {
     document.getElementById('statY20').className = 'stat-val ' + (d20 >= 0 ? 'buy' : 'rent');
     document.getElementById('statY20Sub').textContent = d20 >= 0 ? 'buy leads' : 'rent leads';
   }
-  document.getElementById('statPI').textContent = fmt(sim.monthlyPI);
+  // Monthly P&I display: show initial, or initial → refi if refi enabled
+  if (sim.hasRefinanced && sim.postRefiMonthlyPI) {
+    document.getElementById('statPI').textContent = fmt(sim.initialMonthlyPI) + ' → ' + fmt(sim.postRefiMonthlyPI);
+    document.getElementById('statPISub').textContent = `refi at yr ${state.refiYear}`;
+  } else {
+    document.getElementById('statPI').textContent = fmt(sim.initialMonthlyPI);
+    document.getElementById('statPISub').textContent = 'locked for life of loan';
+  }
 
+  // LTCG breakdown pill
+  const ltcg = sim.ltcg;
+  document.getElementById('ltcgComputedVal').textContent = ltcg.total.toFixed(1) + '%';
+  const parts = [`fed ${ltcg.fed}%`];
+  if (ltcg.niit > 0) parts.push(`NIIT ${ltcg.niit}%`);
+  if (ltcg.state > 0) parts.push(`state ${ltcg.state}%`);
+  document.getElementById('ltcgComputedBreakdown').textContent = '= ' + parts.join(' + ');
+
+  // Chart
   const chartYears = sim.years.filter(y => y.year <= hz);
   const labels = chartYears.map(y => y.year);
   const buyData = chartYears.map(y => y.netWorthBuy);
@@ -1331,6 +1547,7 @@ function render() {
     },
   });
 
+  // Mobility card
   const mobCard = document.getElementById('mobilityCard');
   if (isExitVisa) {
     mobCard.style.display = 'block';
@@ -1340,11 +1557,12 @@ function render() {
     document.getElementById('pathARent').textContent = fmtFull(visa.stayData.netWorthRent);
     document.getElementById('pathBLabel').textContent = `Path B · Exit Yr ${visa.exitYear} · ${Math.round(visa.pLeave*100)}%`;
     document.getElementById('pathBBuy').textContent = fmtFull(visa.adjExitBuy);
-    document.getElementById('pathBRent').textContent = fmtFull(visa.exitData.netWorthRent);
+    document.getElementById('pathBRent').textContent = fmtFull(visa.adjExitRent);
     document.getElementById('pathBFrictionPct').textContent = state.exitFrictionPct;
     document.getElementById('pathBFriction').textContent = '−' + fmtFull(visa.nriFriction);
+    document.getElementById('pathBFlatCost').textContent = '−' + fmtFull(visa.flatCost);
     document.getElementById('evNote').innerHTML =
-      `Expected value = <strong>${Math.round(visa.pStay*100)}% × Path A + ${Math.round(visa.pLeave*100)}% × Path B.</strong> This reflects the probabilities you entered, not just the full ${hz}-year scenario.`;
+      `Expected value = <strong>${Math.round(visa.pStay*100)}% × Path A + ${Math.round(visa.pLeave*100)}% × Path B.</strong> Both paths weighted together give your scenario-adjusted net worth.`;
   } else {
     mobCard.style.display = 'none';
   }
@@ -1363,6 +1581,7 @@ function renderTable(sim, hz) {
       <td>${fmt(y.homeValue)}</td>
       <td class="muted">${fmt(y.mortgageBalance)}</td>
       <td class="muted">${fmt(y.interestPaidYear)}</td>
+      <td class="muted">${y.pmiPaidYear > 0 ? fmt(y.pmiPaidYear) : '—'}</td>
       <td>${fmt(y.annualOwnerCost)}</td>
       <td class="muted">${fmt(y.rent)}</td>
       <td>${fmt(y.annualRentCost)}</td>
@@ -1375,6 +1594,30 @@ function renderTable(sim, hz) {
   });
 }
 
+// Show/hide PMI field based on down payment, enable/disable refi fields
+function updateConditionalUI() {
+  const pmiWrap = document.getElementById('pmiFieldWrap');
+  const pmiTip = document.getElementById('pmiTip');
+  if (state.downPaymentPct < 20) {
+    pmiWrap.classList.remove('field-disabled');
+    const ltv = (1 - state.downPaymentPct/100) * 100;
+    pmiTip.textContent = `LTV starts at ${ltv.toFixed(0)}%. PMI charged until balance falls to 78% of home price.`;
+  } else {
+    pmiWrap.classList.add('field-disabled');
+    pmiTip.textContent = 'Not applicable (20%+ down payment)';
+  }
+
+  const refiFields = document.getElementById('refiFields');
+  if (state.refiEnabled) {
+    refiFields.classList.remove('field-disabled');
+  } else {
+    refiFields.classList.add('field-disabled');
+  }
+
+  // Auto-toggle NIIT checkbox when marginal hits 32% (only if user hasn't manually toggled)
+  // This is a gentle nudge, not a lock
+}
+
 // ===== INPUT BINDING =====
 function readInputs() {
   state.homePrice = gv('homePrice');
@@ -1384,8 +1627,15 @@ function readInputs() {
   state.propertyTaxRate = gv('propertyTaxRate');
   state.insuranceAnnual = gv('insuranceAnnual');
   state.maintenancePct = gv('maintenancePct');
+  state.reservesPct = gv('reservesPct');
   state.hoaMonthly = gv('hoaMonthly');
   state.closingCostPct = gv('closingCostPct');
+  state.pmiRate = gv('pmiRate');
+  state.refiEnabled = gc('refiEnabled');
+  state.refiYear = Math.max(1, gv('refiYear'));
+  state.refiNewRate = gv('refiNewRate');
+  state.refiNewTerm = Math.max(5, gv('refiNewTerm'));
+  state.refiClosingCostPct = gv('refiClosingCostPct');
   state.monthlyRent = gv('monthlyRent');
   state.rentEscalation = gv('rentEscalation');
   state.appreciationRate = gv('appreciationRate');
@@ -1394,29 +1644,35 @@ function readInputs() {
   state.filingStatus = document.getElementById('filingStatus').value;
   state.marginalTaxRate = gv('marginalTaxRate');
   state.stateLocalTax = gv('stateLocalTax');
+  state.saltCap = gv('saltCap');
+  state.stateLTCGRate = gv('stateLTCGRate');
+  state.niitApplies = gc('niitApplies');
   state.probabilityStaying = Math.min(100, Math.max(0, gv('probabilityStaying')));
   state.earlyExitYear = Math.max(1, gv('earlyExitYear'));
   state.exitFrictionPct = gv('exitFrictionPct');
+  state.exitFlatCost = gv('exitFlatCost');
   state.horizonYears = gv('horizonYears');
 }
 
 function setInputs(s) {
   const numIds = ['homePrice','downPaymentPct','mortgageRate','mortgageTerm','propertyTaxRate',
-    'insuranceAnnual','maintenancePct','hoaMonthly','closingCostPct','monthlyRent','rentEscalation',
-    'appreciationRate','investmentReturn','inflationRate','marginalTaxRate','stateLocalTax',
-    'probabilityStaying','earlyExitYear','exitFrictionPct','horizonYears'];
+    'insuranceAnnual','maintenancePct','reservesPct','hoaMonthly','closingCostPct','pmiRate',
+    'refiYear','refiNewRate','refiNewTerm','refiClosingCostPct',
+    'monthlyRent','rentEscalation','appreciationRate','investmentReturn','inflationRate',
+    'marginalTaxRate','stateLocalTax','saltCap','stateLTCGRate',
+    'probabilityStaying','earlyExitYear','exitFrictionPct','exitFlatCost','horizonYears'];
   numIds.forEach(id => { if (s[id] !== undefined) document.getElementById(id).value = s[id]; });
   if (s.filingStatus) document.getElementById('filingStatus').value = s.filingStatus;
+  if (s.niitApplies !== undefined) document.getElementById('niitApplies').checked = s.niitApplies;
+  if (s.refiEnabled !== undefined) document.getElementById('refiEnabled').checked = s.refiEnabled;
   if (s.visaStatus) setVisaByValue(s.visaStatus);
 }
 
-// ===== UPDATED: setVisa now applies VISA_DEFAULTS =====
 function setVisa(btn) {
   document.querySelectorAll('.visa-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.visaStatus = btn.dataset.visa;
 
-  // Apply the defaults for this visa, but only for fields the user hasn't manually edited.
   const d = VISA_DEFAULTS[state.visaStatus];
   if (d) {
     if (!userEditedFriction) {
@@ -1450,7 +1706,6 @@ function applyPreset(key) {
 function resetDefaults() {
   Object.assign(state, DEFAULTS);
   setInputs(DEFAULTS);
-  // Reset the touched flags so visa-driven defaults kick back in.
   userEditedFriction = false;
   userEditedProbStay = false;
   render();
@@ -1465,9 +1720,10 @@ function toggleTable() {
 // Bind all inputs
 document.querySelectorAll('input, select').forEach(el => {
   el.addEventListener('input', () => { readInputs(); render(); });
+  el.addEventListener('change', () => { readInputs(); render(); });
 });
 
-// NEW: flag fields as user-edited so visa click doesn't overwrite them
+// Flag user-edited visa-linked fields
 document.getElementById('exitFrictionPct').addEventListener('input', () => { userEditedFriction = true; });
 document.getElementById('probabilityStaying').addEventListener('input', () => { userEditedProbStay = true; });
 
