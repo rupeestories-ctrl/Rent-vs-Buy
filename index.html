@@ -1,154 +1,478 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Rent vs Buy Planner · Rupee Stories</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta charset="UTF-8">
+<title>Rent vs Buy Pro — NRI Edition</title>
 <style>
-:root{
-  --navy:#0e0e2a;--cream:#faf6ed;--cream2:#f5efe0;--gold:#c4a054;--gold2:#faf0d4;
-  --border:#e2d8c0;--text:#1a1a2e;--muted:#746b57;--faint:#a89d86;--red:#c44d3d;--green:#2a6e3f;--white:#fff;
-  --display:'Playfair Display',Georgia,serif;--body:'Inter',system-ui,sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace;
+:root {
+  --navy: #0e0e2a;
+  --gold: #c4a054;
+  --cream: #faf6ed;
+  --border: #e8dcc0;
+  --dark: #1a1a2e;
+  --green: #2e7d52;
+  --red: #c0392b;
 }
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--body);font-size:14px;line-height:1.55;background:var(--cream);color:var(--text)}
-button,input,select{font:inherit}button{cursor:pointer;border:0;background:none}.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
-header{background:var(--navy);color:#fff}.top{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid rgba(196,160,84,.18)}
-.top a{font-family:var(--mono);font-size:12px;color:var(--gold);text-decoration:none}.hero{padding:52px 0 60px;text-align:center;max-width:820px;margin:auto}
-h1{font-family:var(--display);font-size:clamp(2.25rem,5vw,3.8rem);line-height:1.08;margin-bottom:14px}h1 em{color:var(--gold);font-style:italic;font-weight:400}
-.hero p{max-width:650px;margin:0 auto 20px;color:#cec8b8}.pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}.pill{font-family:var(--mono);font-size:11px;border:1px solid rgba(196,160,84,.35);border-radius:999px;padding:6px 12px;color:#eadfcb;background:rgba(255,255,255,.06)}
-main{padding:30px 0 64px}.grid{display:grid;grid-template-columns:1fr 1.45fr;gap:22px;align-items:start}@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.presets{margin-bottom:24px}.label-small{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font-weight:700;margin-bottom:8px}.hint{font-size:12px;color:var(--muted);margin-bottom:10px}.preset-row{display:flex;flex-wrap:wrap;gap:8px}.preset-row button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 13px;font-size:13px}.preset-row button:hover{background:var(--gold2);border-color:var(--gold)}
-.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:15px}.step{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font-weight:700}.title{font-family:var(--display);font-size:18px;font-weight:700;margin:2px 0 2px}.sub{font-size:12px;color:var(--muted);margin-bottom:14px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.field label{display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}.input{position:relative}.input input,.input select{width:100%;border:1px solid var(--border);border-radius:6px;background:#fff;padding:8px 42px 8px 10px;font-family:var(--mono);font-size:13px}.input input:focus,.input select:focus{outline:0;border-color:var(--gold)}.suffix{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--faint);font-family:var(--mono);font-size:11px;pointer-events:none}.tip{font-size:10px;color:var(--faint);margin-top:3px}.checks{display:flex;gap:8px;align-items:center;margin:4px 0 12px}.checks input{width:16px;height:16px;accent-color:var(--gold)}
-.visa{display:grid;grid-template-columns:1fr 1fr;gap:8px}.visa button{border:1px solid var(--border);border-radius:7px;padding:9px;background:#fff}.visa button.active{background:var(--gold2);border-color:var(--gold);font-weight:700}.conditional{display:none}.conditional.on{display:block}.note{background:var(--gold2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--muted);margin-top:10px}
-.verdict{background:var(--navy);color:#fff;border-radius:16px;padding:26px;margin-bottom:15px}.verdict .eyebrow{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.25em;color:var(--gold);margin-bottom:10px}.verdict-flex{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;flex-wrap:wrap}.verdict-word{font-family:var(--display);font-size:clamp(3.5rem,7vw,5.25rem);line-height:1}.verdict-word span{color:var(--gold);font-style:italic}.verdict-sub{font-size:13px;color:#d0c7b4;margin-top:6px}.verdict-sub strong{color:var(--gold)}.num-row{display:flex;gap:20px}.num-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;color:#9f947d;text-align:right}.num-val{font-family:var(--display);font-size:23px;font-weight:700;text-align:right}.assumptions{font-family:var(--mono);font-size:10px;color:#9f947d;margin-top:6px}
-.summary{background:var(--gold2);border:1px solid var(--border);border-radius:10px;padding:12px 15px;font-size:13px;font-style:italic;margin-bottom:15px}.summary strong{font-style:normal;color:var(--navy)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}.stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px}.stat-l{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}.stat-v{font-family:var(--display);font-size:21px;font-weight:700}.stat-sub{font-size:10px;color:var(--faint)}.rent{color:#a47d2c}.buy{color:var(--navy)}
-.chart-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:15px}.chart-head{display:flex;justify-content:space-between;margin-bottom:12px}.chart-title{font-family:var(--display);font-weight:700;font-size:17px}.chart-wrap{height:300px;position:relative}.mob{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:15px}.paths{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:650px){.paths{grid-template-columns:1fr}}.path{border-left:4px solid var(--gold);background:var(--gold2);border-radius:8px;padding:13px}.path.exit{border-left-color:var(--red);background:#fdf0ea}.path h4{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.16em;margin-bottom:8px}.row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin:4px 0}.row b{font-weight:700}.table-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:15px}.toggle{width:100%;padding:15px 18px;display:flex;justify-content:space-between;align-items:center}.table-wrap{display:none;overflow-x:auto;border-top:1px solid var(--border)}.table-wrap.open{display:block}table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}th:first-child,td:first-child{text-align:left}thead{background:var(--gold2)}details{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:15px;overflow:hidden}summary{padding:15px 18px;cursor:pointer;list-style:none}summary::-webkit-details-marker{display:none}.method{padding:0 18px 18px;border-top:1px solid var(--border)}.method p{font-family:var(--display);font-size:13px;line-height:1.75;margin-top:13px}.footer{font-size:12px;color:var(--faint);font-style:italic;border-top:1px solid var(--border);padding-top:16px}.hidden{display:none!important}
+body {
+  background: var(--cream);
+  font-family: system-ui, sans-serif;
+  color: var(--dark);
+  padding: 20px;
+  max-width: 1100px;
+  margin: auto;
+}
+h1 { margin-bottom: 10px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.card {
+  background: white;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.field { margin-bottom: 10px; }
+label {
+  font-size: 12px;
+  color: #666;
+  display: block;
+  margin-bottom: 3px;
+}
+input, select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+button {
+  width: 100%;
+  padding: 15px;
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#verdict {
+  margin-top: 20px;
+  padding: 18px;
+  background: var(--navy);
+  color: white;
+  border-radius: 12px;
+  font-weight: bold;
+  line-height: 1.7;
+}
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+.result-box {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: 10px;
+}
+.result-box small {
+  display: block;
+  color: #777;
+  margin-bottom: 4px;
+}
+.result-box strong {
+  font-size: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background: #faf0d4;
+}
+.note {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
 </style>
 </head>
+
 <body>
-<header>
-  <div class="wrap">
-    <div class="top"><a href="https://www.reddit.com/r/rupeestories/" target="_blank" rel="noopener">↗ r/RupeeStories</a><a href="#">Rupee Stories</a></div>
-    <div class="hero">
-      <h1>Rent vs Buy <em>Planner</em></h1>
-      <p>Handles H1B timeline risk, early exit, rental conversion, depreciation recapture, income-based capital gains, PMI, refinance, property tax models, and insurance growth.</p>
-      <div class="pills"><span class="pill">No login</span><span class="pill">2026 tax assumptions</span><span class="pill">NRI exit modeling</span><span class="pill">Sell / rent / hold</span><span class="pill">Educational only</span></div>
+
+<h1>Rent vs Buy Pro — NRI Edition</h1>
+<p class="note">
+Educational model only. Tax outcomes can vary by state, income, filing status, rental conversion, depreciation, and actual sale facts.
+</p>
+
+<div class="grid">
+
+  <div class="card">
+    <h3>Home Sale</h3>
+
+    <div class="field">
+      <label>Original Purchase Price ($)</label>
+      <input type="number" id="purchasePrice" value="500000">
+    </div>
+
+    <div class="field">
+      <label>Current / Future Home Value ($)</label>
+      <input type="number" id="homeValue" value="600000">
+    </div>
+
+    <div class="field">
+      <label>Mortgage Balance at Sale ($)</label>
+      <input type="number" id="mortgageBalance" value="400000">
+    </div>
+
+    <div class="field">
+      <label>Capital Improvements Added to Basis ($)</label>
+      <input type="number" id="improvements" value="0">
     </div>
   </div>
-</header>
-<main class="wrap">
-  <div class="presets">
-    <div class="label-small">Quick presets</div>
-    <div class="hint">Use these as starting points. Then adjust your own rent, taxes, timeline, and exit choice.</div>
-    <div class="preset-row"><button onclick="applyPreset('hcol')">HCOL</button><button onclick="applyPreset('mcol_low')">MCOL low tax</button><button onclick="applyPreset('mcol_high')">MCOL high tax</button><button onclick="applyPreset('lcol')">LCOL</button><button onclick="applyPreset('buy_friendly')">Buy-friendly</button><button onclick="resetDefaults()">Reset</button></div>
+
+  <div class="card">
+    <h3>Selling Costs</h3>
+
+    <div class="field">
+      <label>Agent Fee (%)</label>
+      <input type="number" id="agentFee" value="5" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Seller Closing Cost (%)</label>
+      <input type="number" id="closingSell" value="1.5" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Transfer Tax (%)</label>
+      <input type="number" id="transferTax" value="0.5" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Rushed Sale Discount (%)</label>
+      <input type="number" id="rushDiscount" value="0" step="0.1">
+    </div>
   </div>
-  <div class="grid">
-    <section>
-      <div class="card"><div class="step">Step 1 · Buy side</div><div class="title">The house</div><div class="sub">Purchase price and owner costs</div><div class="fields">
-        <Field id="homePrice" label="Home Price" suffix="$"></Field>
-        <Field id="downPaymentPct" label="Down Payment" suffix="%"></Field>
-        <Field id="mortgageRate" label="Mortgage Rate" suffix="%"></Field>
-        <Field id="mortgageTerm" label="Term" suffix="yr"></Field>
-        <Field id="propertyTaxRate" label="Property Tax" suffix="%/yr"></Field>
-        <Field id="insuranceAnnual" label="Insurance" suffix="$/yr"></Field>
-        <Field id="maintenancePct" label="Maintenance" suffix="%/yr" tip="Averaged annual maintenance."></Field>
-        <Field id="reservesPct" label="Reserves" suffix="%/yr" tip="Lumpy repairs like roof, HVAC, sewer, special assessments."></Field>
-        <Field id="hoaMonthly" label="HOA" suffix="$/mo"></Field>
-        <Field id="closingCostPct" label="Closing Costs" suffix="%"></Field>
-        <div class="field full" id="pmiFieldWrap"><label>PMI Rate</label><div class="input"><input id="pmiRate" type="number" step="0.05"><span class="suffix">%/yr</span></div><div class="tip" id="pmiTip">Only used if down payment is below 20%.</div></div>
-      </div></div>
 
-      <div class="card"><div class="step">Step 1.5 · Refinance</div><div class="title">Rate drop scenario</div><div class="sub">Optional future refinance</div>
-        <div class="checks"><input type="checkbox" id="refiEnabled"><label for="refiEnabled">Enable refinance</label></div>
-        <div class="fields" id="refiFields"><Field id="refiYear" label="Refi Year" suffix="yr"></Field><Field id="refiNewRate" label="New Rate" suffix="%"></Field><Field id="refiNewTerm" label="New Term" suffix="yr"></Field><Field id="refiClosingCostPct" label="Refi Cost" suffix="%" tip="Paid from buyer cash first. If cash is not enough, the remainder is added to the loan balance."></Field></div>
-      </div>
+  <div class="card">
+    <h3>Tax Profile</h3>
 
-      <div class="card"><div class="step">Step 2 · Rent side</div><div class="title">The rental</div><div class="sub">Comparable rental assumption</div><div class="fields"><Field id="monthlyRent" label="Monthly Rent" suffix="$"></Field><Field id="rentEscalation" label="Rent Growth" suffix="%/yr"></Field></div></div>
+    <div class="field">
+      <label>Filing Status</label>
+      <select id="filingStatus">
+        <option value="married">Married Filing Jointly</option>
+        <option value="single">Single</option>
+      </select>
+    </div>
 
-      <div class="card"><div class="step">Step 3 · Growth</div><div class="title">Market assumptions</div><div class="sub">Home, market, and inflation</div><div class="fields"><Field id="appreciationRate" label="Home Appreciation" suffix="%/yr"></Field><Field id="investmentReturn" label="Investment Return" suffix="%/yr"></Field><Field id="inflationRate" label="Inflation" suffix="%/yr"></Field></div></div>
+    <div class="field">
+      <label>Taxable Income Before Gain ($)</label>
+      <input type="number" id="taxableIncomeBeforeGain" value="150000">
+    </div>
 
-      <div class="card"><div class="step">Step 4 · Taxes</div><div class="title">Tax situation</div><div class="sub">2026 assumptions, editable</div><div class="fields">
-        <div class="field"><label>Filing Status</label><div class="input"><select id="filingStatus"><option value="MFJ">Married Filing Jointly</option><option value="Single">Single</option></select></div></div>
-        <Field id="marginalTaxRate" label="Marginal Rate" suffix="%"></Field>
-        <Field id="stateLocalTax" label="State + Local Income Tax" suffix="$/yr" cls="full"></Field>
-        <Field id="saltCap" label="SALT Cap" suffix="$" tip="$40,400 default for 2026. Use $10K if phase-out applies."></Field>
-        <Field id="stateLTCGRate" label="State Capital Gains Rate" suffix="%"></Field>
-        <div class="field full"><div class="checks"><input type="checkbox" id="niitApplies"><label for="niitApplies">Apply NIIT 3.8%</label></div></div>
-        <div class="field full"><div class="note">Effective capital gains rate: <b id="ltcgComputedVal">-</b> <span id="ltcgComputedBreakdown"></span></div></div>
-      </div></div>
+    <div class="field">
+      <label>MAGI Before Gain ($)</label>
+      <input type="number" id="magiBeforeGain" value="200000">
+    </div>
 
-      <div class="card"><div class="step">Step 5 · NRI lens</div><div class="title">Visa and timeline</div><div class="sub">The part normal calculators miss</div><div class="fields">
-        <div class="field full"><label>Status</label><div class="visa" id="visaBtns"><button data-visa="H1B" onclick="setVisa(this)" class="active">H1B</button><button data-visa="GC_pending" onclick="setVisa(this)">GC Pending</button><button data-visa="GC" onclick="setVisa(this)">Green Card</button><button data-visa="Citizen" onclick="setVisa(this)">Citizen</button></div></div>
-        <Field id="probabilityStaying" label="P(Staying Full Term)" suffix="%"></Field>
-        <Field id="earlyExitYear" label="If Exit, What Year" suffix="yr"></Field>
-        <Field id="exitFrictionPct" label="Exit Friction" suffix="%" cls="full" tip="Proxy for FIRPTA cash-flow drag, rushed sale discount, remote sale logistics."></Field>
-        <Field id="exitFlatCost" label="Exit Flat Costs" suffix="$" cls="full" tip="CPA, sale-year paperwork, POA, wire fees."></Field>
-        <Field id="horizonYears" label="Analysis Horizon" suffix="yr" cls="full"></Field>
-      </div></div>
-
-      <div class="card"><div class="step">Step 6 · If life changes</div><div class="title">Exit strategy and regional costs</div><div class="sub">Sell, rent it out, or hold vacant</div><div class="fields">
-        <div class="field full"><label title="Used only for the early-exit path. Stay path still uses full-horizon buy vs rent math.">Exit Strategy ⓘ</label><div class="input"><select id="exitStrategy"><option value="sell">Sell if I leave</option><option value="rent_out">Convert to rental if I leave</option><option value="hold_vacant">Keep vacant / family use</option></select></div></div>
-        <div class="field full conditional" id="rentalFields"><div class="note"><b>Rental conversion mode.</b> Cash flow and taxable income are modeled separately. Principal is cash flow only, not deductible. Depreciation uses building value over 27.5 years.</div><div class="fields" style="margin-top:12px">
-          <Field id="convertRentMonthly" label="Expected Monthly Rent" suffix="$/mo"></Field><Field id="rentalRentGrowth" label="Rental Rent Growth" suffix="%/yr"></Field><Field id="rentalVacancyPct" label="Vacancy" suffix="%"></Field><Field id="propertyManagementPct" label="Property Mgmt" suffix="%"></Field><Field id="rentalMaintenancePct" label="Rental Maintenance" suffix="%/yr"></Field><Field id="rentalTaxRate" label="Rental Tax Rate" suffix="%"></Field><Field id="buildingValuePct" label="Building Value" suffix="%" cls="full"></Field>
-        </div></div>
-        <div class="field full conditional" id="holdVacantNote"><div class="note"><b>Hold vacant:</b> mortgage keeps amortizing after exit, carrying costs continue, no rent is received, and the home is sold at horizon.</div></div>
-        <div class="field full"><label title="Market value reassesses every year. Capped growth models places like California Prop 13. Custom lets you set your own assessment growth.">Property Tax Model ⓘ</label><div class="input"><select id="propertyTaxModel"><option value="market_value">Market value reassessment</option><option value="capped_growth">Capped assessment growth</option><option value="custom_growth">Custom assessment growth</option></select></div></div>
-        <Field id="propertyTaxGrowthCap" label="Assessment Cap" suffix="%/yr"></Field>
-        <Field id="propertyTaxCustomGrowth" label="Custom Assessment Growth" suffix="%/yr"></Field>
-        <Field id="homesteadSavingsAnnual" label="Homestead Savings" suffix="$/yr"></Field>
-        <Field id="insuranceGrowthRate" label="Insurance Growth" suffix="%/yr" tip="Separate from inflation. Use higher values for wildfire, flood, coastal, or fast-rising insurance markets."></Field>
-        <Field id="taxableIncomeAtSale" label="Taxable Income at Sale" suffix="$/yr" cls="full" tip="Used to choose federal LTCG bracket."></Field>
-      </div></div>
-    </section>
-
-    <section>
-      <div class="verdict"><div class="eyebrow">Scenario-weighted outcome</div><div class="verdict-flex"><div><div class="verdict-word" id="verdictWord">-<span>.</span></div><div class="verdict-sub" id="verdictSub">-</div><div class="assumptions" id="verdictAssumptions">-</div></div><div class="num-row"><div><div class="num-label">If Buy</div><div class="num-val" id="verdictBuyNW">-</div></div><div><div class="num-label">If Rent</div><div class="num-val" id="verdictRentNW">-</div></div></div></div></div>
-      <div class="summary" id="summaryStrip">-</div>
-      <div class="note" id="marketNote" style="display:none;margin-bottom:15px"><b>Market context:</b> rent is <b id="rentRatio">-</b> of home value per month. A rough buy-friendly rent threshold is about <b>$<span id="buyThreshold">-</span>/mo</b>.</div>
-      <div class="stats"><div class="stat"><div class="stat-l">Crossover</div><div class="stat-v" id="statBreakEven">-</div><div class="stat-sub" id="statBreakEvenSub">-</div></div><div class="stat"><div class="stat-l">Yr 10 Delta</div><div class="stat-v" id="statY10">-</div><div class="stat-sub" id="statY10Sub">-</div></div><div class="stat"><div class="stat-l">Yr 20 Delta</div><div class="stat-v" id="statY20">-</div><div class="stat-sub" id="statY20Sub">-</div></div><div class="stat"><div class="stat-l">Monthly P&I</div><div class="stat-v" id="statPI">-</div><div class="stat-sub" id="statPISub">-</div></div></div>
-      <div class="chart-card"><div class="chart-head"><div class="chart-title">Net worth over time</div><div class="hint">If liquidated each year</div></div><div class="chart-wrap"><canvas id="mainChart"></canvas></div></div>
-      <div class="mob" id="mobilityCard"><div class="label-small">The mobility lens</div><div class="title">Two paths, weighted</div><div class="paths"><div class="path"><h4 id="pathALabel">Path A</h4><div class="row"><span>Buy NW</span><b id="pathABuy">-</b></div><div class="row"><span>Rent NW</span><b id="pathARent">-</b></div></div><div class="path exit"><h4 id="pathBLabel">Path B</h4><p id="pathBDesc" style="font-size:12px;margin-bottom:8px">-</p><div class="row"><span>Buy NW</span><b id="pathBBuy">-</b></div><div class="row"><span>Rent NW</span><b id="pathBRent">-</b></div><div class="row"><span>Friction</span><b id="pathBFriction">-</b></div><div class="row"><span>Flat costs</span><b id="pathBFlatCost">-</b></div></div></div><div class="note" id="evNote">-</div></div>
-      <div class="table-card"><button class="toggle" onclick="toggleTable()"><span><span class="label-small">Deep dive</span><br><b>Year-by-year breakdown</b></span><span id="tableChevron">Show</span></button><div class="table-wrap" id="tableWrap"><table><thead><tr><th>Yr</th><th>Home Val</th><th>Mortgage</th><th>Interest</th><th>PMI</th><th>Own Cost</th><th>Rent/mo</th><th>Rent Cost</th><th>Portfolio</th><th>NW Buy</th><th>NW Rent</th><th>Delta</th></tr></thead><tbody id="tableBody"></tbody></table></div></div>
-      <details><summary><span class="label-small">Transparency</span><br><b>How this is calculated</b></summary><div class="method"><p><strong>Amortization.</strong> Month-level principal and interest. PMI applies if down payment is below 20% and cancels once balance falls below 78% of original value. Optional refinance rebuilds amortization at the new rate and term.</p><p><strong>Taxes.</strong> Uses 2026 standard deduction defaults of $32,200 MFJ and $16,100 Single. SALT cap is editable. Federal capital gains bracket is based on taxable income at sale, with NIIT and state capital gains added if selected.</p><p><strong>Rental conversion.</strong> Cash flow deducts principal and interest. Taxable income deducts interest and depreciation, not principal. Depreciation uses building value over 27.5 years. Sale after rental conversion includes depreciation recapture and §121 eligibility based on the 2-out-of-5-year rule.</p><p><strong>Exit modeling.</strong> H1B and GC-pending scenarios apply exit friction and flat exit costs. Exit strategy can be sell, rent out, or hold vacant. In hold-vacant mode, the mortgage continues amortizing after the exit year using the active mortgage rate at exit, including any refinance that already occurred.</p><p><strong>Not financial advice.</strong> This is a planning model. Tax outcomes can vary by state, income, passive loss rules, AMT, FIRPTA details, and whether you keep the home as a rental.</p></div></details>
-      <div class="footer"><p>Rupee Stories · Built for the NRI who actually runs the numbers.</p></div>
-    </section>
+    <div class="field">
+      <label>State Capital Gains Tax Rate (%)</label>
+      <input type="number" id="stateCapitalGainsRate" value="0" step="0.1">
+    </div>
   </div>
-</main>
+
+  <div class="card">
+    <h3>Section 121</h3>
+
+    <div class="field">
+      <label>Qualifies for Primary Home Exclusion?</label>
+      <select id="section121">
+        <option value="yes">Yes, owned and used as primary home for 2 of last 5 years</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Depreciation Recapture ($)</label>
+      <input type="number" id="depreciationRecapture" value="0">
+    </div>
+
+    <p class="note">
+      Use depreciation recapture only if the home was rented out and depreciation was taken or allowed.
+    </p>
+  </div>
+
+</div>
+
+<button onclick="calculate()">Run Model</button>
+
+<div id="verdict"></div>
+<div id="results"></div>
+<div id="sensitivity"></div>
+
 <script>
-function FieldTag(){}
-document.querySelectorAll('Field').forEach(el=>{const id=el.getAttribute('id'),label=el.getAttribute('label'),suffix=el.getAttribute('suffix')||'',tip=el.getAttribute('tip')||'',cls=el.getAttribute('cls')||'';el.outerHTML=`<div class="field ${cls}"><label>${label}</label><div class="input"><input type="number" id="${id}" step="any"><span class="suffix">${suffix}</span></div>${tip?`<div class="tip">${tip}</div>`:''}</div>`});
-const DEFAULTS={homePrice:500000,downPaymentPct:20,mortgageRate:6.5,mortgageTerm:30,propertyTaxRate:1.5,insuranceAnnual:1800,maintenancePct:1,reservesPct:.25,hoaMonthly:0,closingCostPct:2,pmiRate:.75,refiEnabled:false,refiYear:5,refiNewRate:5,refiNewTerm:30,refiClosingCostPct:2,monthlyRent:3200,rentEscalation:3,appreciationRate:3,investmentReturn:7.5,inflationRate:2.5,filingStatus:'MFJ',marginalTaxRate:24,stateLocalTax:10000,saltCap:40400,stateLTCGRate:0,niitApplies:false,visaStatus:'H1B',probabilityStaying:50,earlyExitYear:5,exitFrictionPct:3,exitFlatCost:5000,horizonYears:30,exitStrategy:'sell',convertRentMonthly:3500,rentalRentGrowth:3,rentalVacancyPct:6,propertyManagementPct:8,rentalMaintenancePct:1,rentalTaxRate:24,buildingValuePct:80,propertyTaxModel:'market_value',propertyTaxGrowthCap:2,propertyTaxCustomGrowth:4,homesteadSavingsAnnual:0,insuranceGrowthRate:2.5,taxableIncomeAtSale:250000};
-const PRESETS={hcol:{homePrice:1200000,monthlyRent:5500,propertyTaxRate:1.2,insuranceAnnual:3000,hoaMonthly:400,marginalTaxRate:32,stateLocalTax:25000,stateLTCGRate:9.3,niitApplies:true,appreciationRate:3.5},mcol_low:{homePrice:500000,monthlyRent:2400,propertyTaxRate:1.8,insuranceAnnual:2400,stateLocalTax:0,appreciationRate:3.5},mcol_high:{homePrice:500000,monthlyRent:3200,propertyTaxRate:2.2,insuranceAnnual:2200,marginalTaxRate:32,stateLocalTax:18000,stateLTCGRate:10.9,niitApplies:true},lcol:{homePrice:300000,monthlyRent:1800,propertyTaxRate:1.5,insuranceAnnual:1500,marginalTaxRate:22,stateLocalTax:8000,stateLTCGRate:4,rentEscalation:2.5},buy_friendly:{homePrice:400000,monthlyRent:3800,propertyTaxRate:1.2,insuranceAnnual:1800,appreciationRate:4,rentEscalation:3.5,stateLTCGRate:5}};
-const VISA_DEFAULTS={H1B:{exitFrictionPct:3,probabilityStaying:50},GC_pending:{exitFrictionPct:1,probabilityStaying:70},GC:{exitFrictionPct:.5,probabilityStaying:85},Citizen:{exitFrictionPct:0,probabilityStaying:95}};
-let state={...DEFAULTS},chart=null,tableOpen=false,userEditedFriction=false,userEditedProbStay=false;
-function fmt(n){if(n==null||isNaN(n))return'-';let a=Math.abs(n),s=a>=1e6?'$'+(a/1e6).toFixed(2)+'M':a>=1e3?'$'+Math.round(a/1e3)+'K':'$'+Math.round(a).toLocaleString();return n<0?'-'+s:s}
-function fmtFull(n){if(n==null||isNaN(n))return'-';return(n<0?'-$':'$')+Math.abs(Math.round(n)).toLocaleString()}
-function gv(id){let e=document.getElementById(id);return e?parseFloat(e.value)||0:0}function gc(id){let e=document.getElementById(id);return e?e.checked:false}
-function ltcgRate(s){let fed=15,t=s.taxableIncomeAtSale;if(s.filingStatus==='MFJ'){if(t<=98900)fed=0;else if(t<=613700)fed=15;else fed=20}else{if(t<=49450)fed=0;else if(t<=545500)fed=15;else fed=20}let niit=s.niitApplies?3.8:0;return{fed,niit,state:s.stateLTCGRate,total:fed+niit+s.stateLTCGRate}}
-function monthlyPI(balance,rate,years){if(balance<=0)return 0;let mr=rate/100/12,n=years*12;if(mr===0)return balance/n;return balance*(mr*Math.pow(1+mr,n))/(Math.pow(1+mr,n)-1)}
-function propertyTaxFor(s,homeValue,taxableValue,year){let tv=taxableValue;if(s.propertyTaxModel==='market_value')tv=homeValue;else if(s.propertyTaxModel==='capped_growth')tv*=1+s.propertyTaxGrowthCap/100;else tv*=1+s.propertyTaxCustomGrowth/100;return{taxableValue:tv,propertyTax:Math.max(0,tv*s.propertyTaxRate/100-s.homesteadSavingsAnnual)}}
-function saleProceeds(s,homeValue,balance,accumDep,yearsSinceMovedOut){let sellCost=.07,gross=homeValue*(1-sellCost)-balance,ex=s.filingStatus==='MFJ'?500000:250000,rate=ltcgRate(s).total/100,adjustedBasis=s.homePrice-accumDep,totalGain=Math.max(0,homeValue-adjustedBasis),recap=Math.min(accumDep,totalGain),remaining=Math.max(0,totalGain-recap),eligible121=yearsSinceMovedOut==null||yearsSinceMovedOut<=3,excluded=eligible121?Math.min(ex,remaining):0,taxableCG=Math.max(0,remaining-excluded),recapTax=recap*.25,cgTax=taxableCG*rate;return{net:gross-recapTax-cgTax,recapTax,cgTax,totalGain,eligible121}}
-function runSimulation(s){let loan=s.homePrice*(1-s.downPaymentPct/100),down=s.homePrice*s.downPaymentPct/100,closing=s.homePrice*s.closingCostPct/100,balance=loan,pi=monthlyPI(balance,s.mortgageRate,s.mortgageTerm),termEnd=s.mortgageTerm,home=s.homePrice,taxableVal=s.homePrice,buyerCash=0,renter=down+closing,r=s.investmentReturn/100,std=s.filingStatus==='MFJ'?32200:16100,years=[],hasRefi=false,curRate=s.mortgageRate,curPI=pi;
- years.push({year:0,homeValue:home,mortgageBalance:balance,homeEquity:home-balance,netSellProceeds:Math.max(0,home*.93-balance),renterPortfolio:renter,buyerCashSavings:0,netWorthBuy:Math.max(0,home*.93-balance),netWorthRent:renter,rent:s.monthlyRent,annualOwnerCost:0,annualRentCost:0,interestPaidYear:0,principalPaidYear:0,pmiPaidYear:0,taxSavings:0,propertyTax:0,piMonthly:curPI,effectiveMortgageRate:curRate});
- for(let y=1;y<=s.horizonYears;y++){if(s.refiEnabled&&!hasRefi&&y===s.refiYear&&balance>0){let cost=balance*s.refiClosingCostPct/100;if(buyerCash>=cost)buyerCash-=cost;else{balance+=cost-buyerCash;buyerCash=0}curRate=s.refiNewRate;curPI=monthlyPI(balance,s.refiNewRate,s.refiNewTerm);termEnd=y-1+s.refiNewTerm;hasRefi=true}let interest=0,principal=0,pmi=0;for(let m=0;m<12;m++){if(balance>.01&&y<=termEnd){let int=balance*curRate/100/12,prin=Math.min(curPI-int,balance);interest+=int;principal+=prin;balance-=prin;if(s.downPaymentPct<20&&(balance/s.homePrice)>.78)pmi+=balance*s.pmiRate/100/12}}if(balance<.01)balance=0;let pt=propertyTaxFor(s,home,taxableVal,y);taxableVal=pt.taxableValue;home*=1+s.appreciationRate/100;let propTax=pt.propertyTax,ins=s.insuranceAnnual*Math.pow(1+s.insuranceGrowthRate/100,y),maint=home*s.maintenancePct/100,reserves=home*s.reservesPct/100,hoa=s.hoaMonthly*12*Math.pow(1+s.inflationRate/100,y),salt=Math.min(s.saltCap,propTax+s.stateLocalTax),itemized=interest+pmi+salt,taxSavings=Math.max(0,itemized-std)*s.marginalTaxRate/100,own=interest+principal+propTax+ins+maint+reserves+hoa+pmi-taxSavings,rentMo=s.monthlyRent*Math.pow(1+s.rentEscalation/100,y-1),rentCost=rentMo*12;buyerCash*=1+r;renter*=1+r;if(own>rentCost)renter+=own-rentCost;else buyerCash+=rentCost-own;let sale=saleProceeds(s,home,balance,0,null),nwBuy=sale.net+buyerCash,nwRent=renter;years.push({year:y,homeValue:home,mortgageBalance:balance,homeEquity:home-balance,netSellProceeds:sale.net,renterPortfolio:renter,buyerCashSavings:buyerCash,netWorthBuy:nwBuy,netWorthRent:nwRent,rent:rentMo,annualOwnerCost:own,annualRentCost:rentCost,interestPaidYear:interest,principalPaidYear:principal,pmiPaidYear:pmi,taxSavings,propertyTax:propTax,piMonthly:balance>0?curPI:0,effectiveMortgageRate:curRate})}
- let be=null;for(let i=1;i<years.length;i++){if(years[i].netWorthBuy>=years[i].netWorthRent){be=years[i].year;break}}return{years,loanAmount:loan,downPayment:down,closingCostsBuyer:closing,initialMonthlyPI:pi,postRefiMonthlyPI:hasRefi?curPI:null,breakEvenYear:be,ltcg:ltcgRate(s),hasRefinanced:hasRefi,annualDepreciation:s.homePrice*(s.buildingValuePct/100)/27.5}}
-function simulateRentalConversion(sim,s){let exitYear=Math.min(Math.max(1,s.earlyExitYear),s.horizonYears),exit=sim.years[exitYear],home=exit.homeValue,balance=exit.mortgageBalance,buyerCash=exit.buyerCashSavings,r=s.investmentReturn/100,accDep=0,annualDep=s.homePrice*(s.buildingValuePct/100)/27.5,curPI=exit.piMonthly,exitRate=exit.effectiveMortgageRate||s.mortgageRate,taxableVal=home;for(let y=exitYear+1;y<=s.horizonYears;y++){buyerCash*=1+r;let interest=0,principal=0;for(let m=0;m<12;m++){if(balance>.01){let int=balance*exitRate/100/12,prin=Math.min(curPI-int,balance);interest+=int;principal+=prin;balance-=prin}}let pt=propertyTaxFor(s,home,taxableVal,y);taxableVal=pt.taxableValue;home*=1+s.appreciationRate/100;let propTax=pt.propertyTax,ins=s.insuranceAnnual*Math.pow(1+s.insuranceGrowthRate/100,y),hoa=s.hoaMonthly*12*Math.pow(1+s.inflationRate/100,y),grossRent=s.convertRentMonthly*12*Math.pow(1+s.rentalRentGrowth/100,y-exitYear-1),vac=grossRent*s.rentalVacancyPct/100,mgmt=grossRent*s.propertyManagementPct/100,maint=home*s.rentalMaintenancePct/100;accDep+=annualDep;let cashFlow=grossRent-vac-mgmt-propTax-ins-hoa-maint-interest-principal,taxableIncome=grossRent-vac-mgmt-propTax-ins-hoa-maint-interest-annualDep,taxOwed=Math.max(0,taxableIncome)*(s.rentalTaxRate/100+(s.niitApplies?0.038:0));buyerCash+=cashFlow-taxOwed}let sale=saleProceeds(s,home,balance,accDep,s.horizonYears-exitYear);return{netWorth:sale.net+buyerCash,buyerCash,homeValue:home,mortgageBalance:balance,accumDepreciation:accDep,recaptureTax:sale.recapTax,cgTax:sale.cgTax,eligible121:sale.eligible121}}
-function simulateHoldVacant(sim,s){let exitYear=Math.min(Math.max(1,s.earlyExitYear),s.horizonYears),exit=sim.years[exitYear],home=exit.homeValue,balance=exit.mortgageBalance,buyerCash=exit.buyerCashSavings,r=s.investmentReturn/100,taxableVal=home,totalCarry=0,hvRate=exit.effectiveMortgageRate||s.mortgageRate,hvPI=exit.piMonthly;for(let y=exitYear+1;y<=s.horizonYears;y++){buyerCash*=1+r;let mortgagePaid=0;for(let m=0;m<12;m++){if(balance>.01&&hvPI>0){let int=balance*hvRate/100/12,prin=Math.min(hvPI-int,balance);mortgagePaid+=int+prin;balance-=prin;if(balance<.01){balance=0;break}}}let pt=propertyTaxFor(s,home,taxableVal,y);taxableVal=pt.taxableValue;home*=1+s.appreciationRate/100;let ins=s.insuranceAnnual*Math.pow(1+s.insuranceGrowthRate/100,y),maint=home*(s.maintenancePct+s.reservesPct)/100,hoa=s.hoaMonthly*12*Math.pow(1+s.inflationRate/100,y),carryThisYear=mortgagePaid+pt.propertyTax+ins+maint+hoa;buyerCash-=carryThisYear;totalCarry+=carryThisYear}let sale=saleProceeds(s,home,balance,0,null);return{netWorth:sale.net+buyerCash,totalCarry,mortgageBalance:balance}}
-function calcVisa(sim,s){let pStay=Math.min(100,Math.max(0,s.probabilityStaying))/100,pLeave=1-pStay,exitYear=Math.min(Math.max(1,s.earlyExitYear),s.horizonYears),stay=sim.years[s.horizonYears],exit=sim.years[exitYear],apply=s.visaStatus==='H1B'||s.visaStatus==='GC_pending',frictionPct=apply?s.exitFrictionPct:0,flat=apply?s.exitFlatCost:0,friction=exit.homeValue*frictionPct/100,yearsToHz=s.horizonYears-exitYear,compound=Math.pow(1+s.investmentReturn/100,yearsToHz),adjExitBuy=(exit.netWorthBuy-friction-flat)*compound,rentalResult=null;if(s.exitStrategy==='rent_out'){rentalResult=simulateRentalConversion(sim,s);adjExitBuy=rentalResult.netWorth-friction-flat}else if(s.exitStrategy==='hold_vacant'){let hv=simulateHoldVacant(sim,s);adjExitBuy=hv.netWorth-friction-flat}let adjExitRent=exit.netWorthRent*compound,expectedBuy=pStay*stay.netWorthBuy+pLeave*adjExitBuy,expectedRent=pStay*stay.netWorthRent+pLeave*adjExitRent;return{pStay,pLeave,exitYear,exitData:exit,stayData:stay,adjExitBuy,adjExitRent,nriFriction:friction,frictionPct,flatCost:flat,expectedBuy,expectedRent,delta:expectedBuy-expectedRent,rentalResult,yearsToHz}}
-function readInputs(){for(let k in DEFAULTS){let el=document.getElementById(k);if(!el)continue;if(el.type==='checkbox')state[k]=el.checked;else if(el.tagName==='SELECT')state[k]=el.value;else state[k]=parseFloat(el.value)||0}state.probabilityStaying=Math.min(100,Math.max(0,state.probabilityStaying));state.earlyExitYear=Math.max(1,state.earlyExitYear);}
-function setInputs(s){for(let k in DEFAULTS){let el=document.getElementById(k);if(!el||s[k]===undefined)continue;if(el.type==='checkbox')el.checked=s[k];else el.value=s[k]}setVisaByValue(s.visaStatus||state.visaStatus)}
-function updateConditionalUI(){document.getElementById('rentalFields').classList.toggle('on',state.exitStrategy==='rent_out');document.getElementById('holdVacantNote').classList.toggle('on',state.exitStrategy==='hold_vacant');document.getElementById('refiFields').style.opacity=state.refiEnabled?1:.45;document.getElementById('pmiTip').textContent=state.downPaymentPct<20?'PMI included until 78% LTV.':'PMI not used because down payment is 20% or higher.'}
-function render(){updateConditionalUI();let sim=runSimulation(state),visa=calcVisa(sim,state),winner=visa.expectedBuy>=visa.expectedRent?'Buy':'Rent',delta=Math.abs(visa.delta),hz=state.horizonYears;document.getElementById('verdictWord').innerHTML=winner+'<span>.</span>';document.getElementById('verdictSub').innerHTML=(winner==='Buy'?'Buying':'Renting')+` comes out ahead by <strong>${fmt(delta)}</strong> on a probability-weighted basis.`;document.getElementById('verdictBuyNW').textContent=fmt(visa.expectedBuy);document.getElementById('verdictRentNW').textContent=fmt(visa.expectedRent);document.getElementById('verdictAssumptions').textContent=`${hz}yr horizon · exit yr ${visa.exitYear} · ${Math.round(visa.pStay*100)}% stay chance · ${state.exitStrategy.replace('_',' ')}`;let l=sim.ltcg;document.getElementById('ltcgComputedVal').textContent=l.total.toFixed(1)+'%';document.getElementById('ltcgComputedBreakdown').textContent=`(Fed ${l.fed}% + NIIT ${l.niit}% + State ${l.state}%)`;let final=sim.years[hz],buyDiff=final.netWorthBuy-final.netWorthRent;document.getElementById('summaryStrip').innerHTML=buyDiff>=0?`At year ${hz}, buying leaves you with <strong>${fmt(buyDiff)}</strong> more before exit-weighting.`:`At year ${hz}, renting leaves you with <strong>${fmt(-buyDiff)}</strong> more before exit-weighting.`;let ratio=state.monthlyRent/state.homePrice*100;document.getElementById('rentRatio').textContent=ratio.toFixed(2)+'%';document.getElementById('buyThreshold').textContent=Math.round(state.homePrice*.0075).toLocaleString();document.getElementById('marketNote').style.display=ratio<.75?'block':'none';let be=sim.breakEvenYear;document.getElementById('statBreakEven').textContent=be?'Yr '+be:'Never';document.getElementById('statBreakEvenSub').textContent=be?'buy first exceeds rent':'no crossover in horizon';[['statY10',10],['statY20',20]].forEach(([id,y])=>{let d=sim.years[Math.min(y,hz)].netWorthBuy-sim.years[Math.min(y,hz)].netWorthRent;document.getElementById(id).textContent=(d>=0?'+':'-')+fmt(Math.abs(d));document.getElementById(id+'Sub').textContent=d>=0?'buy leads':'rent leads';document.getElementById(id).className='stat-v '+(d>=0?'buy':'rent')});document.getElementById('statPI').textContent=fmt(sim.initialMonthlyPI);document.getElementById('statPISub').textContent=sim.postRefiMonthlyPI?`after refi: ${fmt(sim.postRefiMonthlyPI)}/mo`:'initial P&I';document.getElementById('pathALabel').textContent=`Path A · stay · ${Math.round(visa.pStay*100)}%`;document.getElementById('pathABuy').textContent=fmtFull(visa.stayData.netWorthBuy);document.getElementById('pathARent').textContent=fmtFull(visa.stayData.netWorthRent);document.getElementById('pathBLabel').textContent=`Path B · exit yr ${visa.exitYear} · ${Math.round(visa.pLeave*100)}%`;document.getElementById('pathBDesc').textContent=state.exitStrategy==='rent_out'?'Leave, convert to rental, sell at horizon.':state.exitStrategy==='hold_vacant'?'Leave, hold vacant, sell at horizon.':'Leave and sell in exit year.';document.getElementById('pathBBuy').textContent=fmtFull(visa.adjExitBuy);document.getElementById('pathBRent').textContent=fmtFull(visa.adjExitRent);document.getElementById('pathBFriction').textContent='-'+fmtFull(visa.nriFriction);document.getElementById('pathBFlatCost').textContent='-'+fmtFull(visa.flatCost);document.getElementById('evNote').innerHTML=`Expected value = ${Math.round(visa.pStay*100)}% stay path + ${Math.round(visa.pLeave*100)}% exit path.`;drawChart(sim,hz);drawTable(sim,hz)}
-function drawChart(sim,hz){let data=sim.years.slice(0,hz+1),ctx=document.getElementById('mainChart');if(chart)chart.destroy();chart=new Chart(ctx,{type:'line',data:{labels:data.map(x=>x.year),datasets:[{label:'Buy',data:data.map(x=>Math.round(x.netWorthBuy)),borderColor:'#0e0e2a',borderWidth:2.5,pointRadius:0,tension:.25},{label:'Rent',data:data.map(x=>Math.round(x.netWorthRent)),borderColor:'#c4a054',borderWidth:2.5,pointRadius:0,tension:.25}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtFull(c.raw)}`}}},scales:{y:{ticks:{callback:v=>v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+Math.round(v/1e3)+'K'}}}}})}
-function drawTable(sim,hz){let tb=document.getElementById('tableBody');tb.innerHTML='';sim.years.slice(0,hz+1).forEach(y=>{let d=y.netWorthBuy-y.netWorthRent;tb.insertAdjacentHTML('beforeend',`<tr><td>${y.year}</td><td>${fmt(y.homeValue)}</td><td>${fmt(y.mortgageBalance)}</td><td>${fmt(y.interestPaidYear)}</td><td>${fmt(y.pmiPaidYear)}</td><td>${fmt(y.annualOwnerCost)}</td><td>${fmt(y.rent)}</td><td>${fmt(y.annualRentCost)}</td><td>${fmt(y.renterPortfolio)}</td><td>${fmt(y.netWorthBuy)}</td><td>${fmt(y.netWorthRent)}</td><td>${d>=0?'+':''}${fmt(d)}</td></tr>`)})}
-function setVisa(btn){document.querySelectorAll('.visa button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');state.visaStatus=btn.dataset.visa;let d=VISA_DEFAULTS[state.visaStatus];if(d){if(!userEditedFriction)document.getElementById('exitFrictionPct').value=d.exitFrictionPct;if(!userEditedProbStay)document.getElementById('probabilityStaying').value=d.probabilityStaying}readInputs();render()}
-function setVisaByValue(v){document.querySelectorAll('.visa button').forEach(b=>b.classList.toggle('active',b.dataset.visa===v));state.visaStatus=v}
-function applyPreset(k){state={...DEFAULTS,...PRESETS[k]};userEditedFriction=false;userEditedProbStay=false;setInputs(state);readInputs();render()}function resetDefaults(){state={...DEFAULTS};userEditedFriction=false;userEditedProbStay=false;setInputs(state);render()}function toggleTable(){tableOpen=!tableOpen;document.getElementById('tableWrap').classList.toggle('open',tableOpen);document.getElementById('tableChevron').textContent=tableOpen?'Hide':'Show'}
-document.querySelectorAll('input,select').forEach(el=>{el.addEventListener('input',()=>{readInputs();render()});el.addEventListener('change',()=>{readInputs();render()})});document.getElementById('exitFrictionPct').addEventListener('input',()=>userEditedFriction=true);document.getElementById('probabilityStaying').addEventListener('input',()=>userEditedProbStay=true);setInputs(DEFAULTS);readInputs();render();
+function money(n) {
+  if (!isFinite(n)) return "$0";
+  return (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString();
+}
+
+function pct(n) {
+  return (n * 100).toFixed(1) + "%";
+}
+
+function getNumber(id) {
+  return Number(document.getElementById(id).value) || 0;
+}
+
+function getSellingCosts(homeValue) {
+  const agentFee = getNumber("agentFee") / 100;
+  const closingSell = getNumber("closingSell") / 100;
+  const transferTax = getNumber("transferTax") / 100;
+  const rushDiscount = getNumber("rushDiscount") / 100;
+
+  const adjustedSalePrice = homeValue * (1 - rushDiscount);
+  const sellingCostRate = agentFee + closingSell + transferTax;
+  const sellingCosts = adjustedSalePrice * sellingCostRate;
+
+  return {
+    adjustedSalePrice,
+    sellingCosts,
+    sellingCostRate,
+    rushDiscountAmount: homeValue * rushDiscount
+  };
+}
+
+function getFederalLTCGTax(taxableGain, taxableIncomeBeforeGain, filingStatus) {
+  const brackets = filingStatus === "married"
+    ? { zero: 98900, fifteen: 613700 }
+    : { zero: 49450, fifteen: 545500 };
+
+  let remaining = Math.max(0, taxableGain);
+  let tax = 0;
+
+  const roomAtZero = Math.max(0, brackets.zero - taxableIncomeBeforeGain);
+  const gainAtZero = Math.min(remaining, roomAtZero);
+  remaining -= gainAtZero;
+
+  const incomeAfterZero = Math.max(taxableIncomeBeforeGain, brackets.zero);
+  const roomAtFifteen = Math.max(0, brackets.fifteen - incomeAfterZero);
+  const gainAtFifteen = Math.min(remaining, roomAtFifteen);
+  tax += gainAtFifteen * 0.15;
+  remaining -= gainAtFifteen;
+
+  const gainAtTwenty = Math.max(0, remaining);
+  tax += gainAtTwenty * 0.20;
+
+  return {
+    tax,
+    gainAtZero,
+    gainAtFifteen,
+    gainAtTwenty
+  };
+}
+
+function getNIIT(taxableGain, magiBeforeGain, filingStatus) {
+  const threshold = filingStatus === "married" ? 250000 : 200000;
+  const magiAfterGain = magiBeforeGain + taxableGain;
+  const excessMagi = Math.max(0, magiAfterGain - threshold);
+  const niitBase = Math.min(taxableGain, excessMagi);
+  return {
+    tax: niitBase * 0.038,
+    niitBase,
+    magiAfterGain
+  };
+}
+
+function getSaleTax(rawGain, taxableGain, depreciationRecapture, taxableIncomeBeforeGain, magiBeforeGain, filingStatus, stateRate) {
+  const federal = getFederalLTCGTax(taxableGain, taxableIncomeBeforeGain, filingStatus);
+  const niit = getNIIT(taxableGain, magiBeforeGain, filingStatus);
+
+  const stateTax = taxableGain * stateRate;
+  const recaptureTax = Math.max(0, depreciationRecapture) * 0.25;
+
+  const totalTax = federal.tax + niit.tax + stateTax + recaptureTax;
+
+  return {
+    totalTax,
+    federalTax: federal.tax,
+    niitTax: niit.tax,
+    stateTax,
+    recaptureTax,
+    federalBreakdown: federal,
+    niit
+  };
+}
+
+function calculateScenario(homeValueOverride, stateRateOverride = null) {
+  const purchasePrice = getNumber("purchasePrice");
+  const homeValue = homeValueOverride ?? getNumber("homeValue");
+  const mortgageBalance = getNumber("mortgageBalance");
+  const improvements = getNumber("improvements");
+
+  const filingStatus = document.getElementById("filingStatus").value;
+  const qualifies121 = document.getElementById("section121").value === "yes";
+
+  const taxableIncomeBeforeGain = getNumber("taxableIncomeBeforeGain");
+  const magiBeforeGain = getNumber("magiBeforeGain");
+  const depreciationRecapture = getNumber("depreciationRecapture");
+
+  const stateRate = stateRateOverride ?? getNumber("stateCapitalGainsRate") / 100;
+
+  const sale = getSellingCosts(homeValue);
+
+  const adjustedBasis = purchasePrice + improvements;
+  const rawGain = Math.max(0, sale.adjustedSalePrice - adjustedBasis - sale.sellingCosts);
+
+  const exclusion = qualifies121
+    ? filingStatus === "married" ? 500000 : 250000
+    : 0;
+
+  const gainAfter121 = Math.max(0, rawGain - exclusion);
+
+  const taxableGain = Math.max(0, gainAfter121);
+
+  const tax = getSaleTax(
+    rawGain,
+    taxableGain,
+    depreciationRecapture,
+    taxableIncomeBeforeGain,
+    magiBeforeGain,
+    filingStatus,
+    stateRate
+  );
+
+  const netProceeds =
+    sale.adjustedSalePrice -
+    sale.sellingCosts -
+    mortgageBalance -
+    tax.totalTax;
+
+  return {
+    purchasePrice,
+    homeValue,
+    mortgageBalance,
+    improvements,
+    adjustedBasis,
+    filingStatus,
+    qualifies121,
+    taxableIncomeBeforeGain,
+    magiBeforeGain,
+    depreciationRecapture,
+    sale,
+    rawGain,
+    exclusion,
+    taxableGain,
+    tax,
+    netProceeds
+  };
+}
+
+function calculate() {
+  const r = calculateScenario();
+
+  const verdict = r.netProceeds >= 0 ? "Likely BUY" : "Likely RENT / Avoid forced sale";
+
+  document.getElementById("verdict").innerHTML =
+    verdict + "<br>" +
+    "Net Sale Proceeds: " + money(r.netProceeds) + "<br>" +
+    "Raw Gain: " + money(r.rawGain) + "<br>" +
+    "Taxable Gain After Section 121: " + money(r.taxableGain) + "<br>" +
+    "Estimated Total Tax: " + money(r.tax.totalTax);
+
+  document.getElementById("results").innerHTML = `
+    <div class="result-grid">
+      <div class="result-box">
+        <small>Adjusted Sale Price</small>
+        <strong>${money(r.sale.adjustedSalePrice)}</strong>
+      </div>
+      <div class="result-box">
+        <small>Rush Discount</small>
+        <strong>${money(r.sale.rushDiscountAmount)}</strong>
+      </div>
+      <div class="result-box">
+        <small>Selling Costs</small>
+        <strong>${money(r.sale.sellingCosts)}</strong>
+      </div>
+      <div class="result-box">
+        <small>Mortgage Payoff</small>
+        <strong>${money(r.mortgageBalance)}</strong>
+      </div>
+      <div class="result-box">
+        <small>Adjusted Basis</small>
+        <strong>${money(r.adjustedBasis)}</strong>
+      </div>
+      <div class="result-box">
+        <small>Section 121 Exclusion Used</small>
+        <strong>${money(Math.min(r.rawGain, r.exclusion))}</strong>
+      </div>
+      <div class="result-box">
+        <small>Federal LTCG Tax</small>
+        <strong>${money(r.tax.federalTax)}</strong>
+      </div>
+      <div class="result-box">
+        <small>NIIT</small>
+        <strong>${money(r.tax.niitTax)}</strong>
+      </div>
+      <div class="result-box">
+        <small>State Capital Gains Tax</small>
+        <strong>${money(r.tax.stateTax)}</strong>
+      </div>
+      <div class="result-box">
+        <small>Depreciation Recapture Tax</small>
+        <strong>${money(r.tax.recaptureTax)}</strong>
+      </div>
+    </div>
+  `;
+
+  renderSensitivity();
+}
+
+function renderSensitivity() {
+  const baseHomeValue = getNumber("homeValue");
+  const appreciationRates = [-10, 0, 10, 20];
+  const stateRates = [0, 5, 10];
+
+  let html = `
+    <h3>Sensitivity Analysis</h3>
+    <p class="note">Shows net proceeds under different home value and state tax assumptions.</p>
+    <table>
+      <tr>
+        <th>Home Value Change</th>
+        <th>State Tax 0%</th>
+        <th>State Tax 5%</th>
+        <th>State Tax 10%</th>
+      </tr>
+  `;
+
+  appreciationRates.forEach(change => {
+    const newHomeValue = baseHomeValue * (1 + change / 100);
+    html += `<tr><td>${change > 0 ? "+" : ""}${change}%</td>`;
+
+    stateRates.forEach(sr => {
+      const r = calculateScenario(newHomeValue, sr / 100);
+      html += `<td>${money(r.netProceeds)}</td>`;
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</table>`;
+  document.getElementById("sensitivity").innerHTML = html;
+}
+
+calculate();
 </script>
+
 </body>
 </html>
