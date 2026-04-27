@@ -3,107 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <title>Rent vs Buy Pro — NRI Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root {
-  --navy: #0e0e2a;
-  --gold: #c4a054;
-  --cream: #faf6ed;
-  --border: #e8dcc0;
-  --dark: #1a1a2e;
-  --green: #2e7d52;
-  --red: #c0392b;
+  --navy:#0e0e2a;
+  --gold:#c4a054;
+  --cream:#faf6ed;
+  --border:#e8dcc0;
+  --dark:#1a1a2e;
+  --muted:#706a5c;
+  --green:#2e7d52;
+  --red:#c0392b;
+  --white:#ffffff;
 }
+
+* { box-sizing:border-box; }
+
 body {
-  background: var(--cream);
-  font-family: system-ui, sans-serif;
-  color: var(--dark);
-  padding: 20px;
-  max-width: 1100px;
-  margin: auto;
+  background:var(--cream);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--dark);
+  padding:20px;
+  max-width:1200px;
+  margin:auto;
 }
-h1 { margin-bottom: 10px; }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-}
-.card {
-  background: white;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-.field { margin-bottom: 10px; }
-label {
-  font-size: 12px;
-  color: #666;
-  display: block;
-  margin-bottom: 3px;
-}
-input, select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  box-sizing: border-box;
-}
-button {
-  width: 100%;
-  padding: 15px;
-  background: var(--gold);
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-}
-#verdict {
-  margin-top: 20px;
-  padding: 18px;
-  background: var(--navy);
-  color: white;
-  border-radius: 12px;
-  font-weight: bold;
-  line-height: 1.7;
-}
-.result-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 15px;
-}
-.result-box {
-  background: white;
-  border: 1px solid var(--border);
-  padding: 14px;
-  border-radius: 10px;
-}
-.result-box small {
-  display: block;
-  color: #777;
-  margin-bottom: 4px;
-}
-.result-box strong {
-  font-size: 20px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background: white;
-}
-th, td {
-  border: 1px solid var(--border);
-  padding: 8px;
-  text-align: center;
-}
-th {
-  background: #faf0d4;
-}
+
+h1 { margin-bottom:6px; }
+h2, h3 { margin:0 0 12px; }
+
 .note {
-  font-size: 12px;
-  color: #666;
-  margin-top: 8px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5;
+  margin-bottom:18px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.card {
+  background:var(--white);
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:10px;
+}
+
+.field { margin-bottom:10px; }
+
+label {
+  font-size:12px;
+  color:#666;
+  display:block;
+  margin-bottom:4px;
+}
+
+input, select {
+  width:100%;
+  padding:8px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:white;
+}
+
+button {
+  width:100%;
+  padding:15px;
+  background:var(--gold);
+  border:none;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+  color:var(--navy);
+}
+
+#verdict {
+  margin-top:20px;
+  padding:20px;
+  background:var(--navy);
+  color:white;
+  border-radius:12px;
+  font-weight:700;
+  line-height:1.7;
+}
+
+.result-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin-top:15px;
+}
+
+.result-box {
+  background:white;
+  border:1px solid var(--border);
+  padding:14px;
+  border-radius:10px;
+}
+
+.result-box small {
+  display:block;
+  color:#777;
+  margin-bottom:4px;
+}
+
+.result-box strong {
+  font-size:20px;
+}
+
+.positive { color:var(--green); }
+.negative { color:var(--red); }
+
+.table-wrap {
+  overflow-x:auto;
+  margin-top:20px;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  min-width:760px;
+}
+
+th, td {
+  border:1px solid var(--border);
+  padding:8px;
+  text-align:right;
+  font-size:13px;
+}
+
+th:first-child, td:first-child { text-align:left; }
+
+th {
+  background:#faf0d4;
+  font-weight:700;
+}
+
+.section {
+  margin-top:24px;
 }
 </style>
 </head>
@@ -112,13 +153,13 @@ th {
 
 <h1>Rent vs Buy Pro — NRI Edition</h1>
 <p class="note">
-Educational model only. Tax outcomes can vary by state, income, filing status, rental conversion, depreciation, and actual sale facts.
+Educational model only. This is for planning, not tax advice. Actual tax results can change based on state, income, filing status, rental use, depreciation, sale timing, and CPA treatment.
 </p>
 
 <div class="grid">
 
   <div class="card">
-    <h3>Home Sale</h3>
+    <h3>Home & Loan</h3>
 
     <div class="field">
       <label>Original Purchase Price ($)</label>
@@ -131,13 +172,81 @@ Educational model only. Tax outcomes can vary by state, income, filing status, r
     </div>
 
     <div class="field">
-      <label>Mortgage Balance at Sale ($)</label>
+      <label>Mortgage Balance ($)</label>
       <input type="number" id="mortgageBalance" value="400000">
+    </div>
+
+    <div class="field">
+      <label>Mortgage Rate (%)</label>
+      <input type="number" id="mortgageRate" value="6.5" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Loan Term Remaining (Years)</label>
+      <input type="number" id="loanTerm" value="30">
     </div>
 
     <div class="field">
       <label>Capital Improvements Added to Basis ($)</label>
       <input type="number" id="improvements" value="0">
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Monthly Buy Cost</h3>
+
+    <div class="field">
+      <label>Property Tax Rate (%)</label>
+      <input type="number" id="propertyTaxRate" value="1.5" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Insurance Annual ($)</label>
+      <input type="number" id="insuranceAnnual" value="2000">
+    </div>
+
+    <div class="field">
+      <label>Maintenance Rate (%)</label>
+      <input type="number" id="maintenanceRate" value="1" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>HOA Monthly ($)</label>
+      <input type="number" id="hoaMonthly" value="0">
+    </div>
+
+    <div class="field">
+      <label>PMI Monthly ($)</label>
+      <input type="number" id="pmiMonthly" value="0">
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Rent + Invest</h3>
+
+    <div class="field">
+      <label>Monthly Rent ($)</label>
+      <input type="number" id="monthlyRent" value="3200">
+    </div>
+
+    <div class="field">
+      <label>Rent Increase (%)</label>
+      <input type="number" id="rentIncrease" value="3" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Investment Return (%)</label>
+      <input type="number" id="investmentReturn" value="7" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Home Appreciation (%)</label>
+      <input type="number" id="homeAppreciation" value="3" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Analysis Horizon (Years)</label>
+      <input type="number" id="analysisYears" value="10">
     </div>
   </div>
 
@@ -193,7 +302,7 @@ Educational model only. Tax outcomes can vary by state, income, filing status, r
   </div>
 
   <div class="card">
-    <h3>Section 121</h3>
+    <h3>Section 121 & Rental Use</h3>
 
     <div class="field">
       <label>Qualifies for Primary Home Exclusion?</label>
@@ -215,24 +324,85 @@ Educational model only. Tax outcomes can vary by state, income, filing status, r
 
 </div>
 
-<button onclick="calculate()">Run Model</button>
+<button onclick="calculate()">Run Full Model</button>
 
 <div id="verdict"></div>
 <div id="results"></div>
+<div id="projection"></div>
 <div id="sensitivity"></div>
 
 <script>
+function getNumber(id) {
+  const el = document.getElementById(id);
+  return el ? Number(el.value) || 0 : 0;
+}
+
 function money(n) {
   if (!isFinite(n)) return "$0";
   return (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString();
 }
 
-function pct(n) {
-  return (n * 100).toFixed(1) + "%";
+function classFor(n) {
+  return n >= 0 ? "positive" : "negative";
 }
 
-function getNumber(id) {
-  return Number(document.getElementById(id).value) || 0;
+function monthlyMortgagePayment(loanAmount, annualRate, years) {
+  const r = annualRate / 100 / 12;
+  const n = years * 12;
+
+  if (loanAmount <= 0 || years <= 0) return 0;
+  if (r === 0) return loanAmount / n;
+
+  return loanAmount * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+}
+
+function loanBalanceAfterYears(balance, annualRate, yearsRemaining, yearsElapsed) {
+  const monthlyRate = annualRate / 100 / 12;
+  const totalMonths = yearsRemaining * 12;
+  const elapsedMonths = Math.min(yearsElapsed * 12, totalMonths);
+
+  if (balance <= 0) return 0;
+  if (monthlyRate === 0) {
+    return Math.max(0, balance - (balance / totalMonths) * elapsedMonths);
+  }
+
+  const pmt = monthlyMortgagePayment(balance, annualRate, yearsRemaining);
+  let bal = balance;
+
+  for (let i = 0; i < elapsedMonths; i++) {
+    const interest = bal * monthlyRate;
+    const principal = Math.max(0, pmt - interest);
+    bal = Math.max(0, bal - principal);
+  }
+
+  return bal;
+}
+
+function getMonthlyBuyCost(year = 0) {
+  const purchasePrice = getNumber("purchasePrice");
+  const mortgageBalance = getNumber("mortgageBalance");
+  const mortgageRate = getNumber("mortgageRate");
+  const loanTerm = getNumber("loanTerm");
+
+  const projectedHomeValue = purchasePrice * Math.pow(1 + getNumber("homeAppreciation") / 100, year);
+
+  const propertyTax = projectedHomeValue * getNumber("propertyTaxRate") / 100 / 12;
+  const insurance = getNumber("insuranceAnnual") / 12;
+  const maintenance = projectedHomeValue * getNumber("maintenanceRate") / 100 / 12;
+  const hoa = getNumber("hoaMonthly");
+  const pmi = getNumber("pmiMonthly");
+
+  const pi = monthlyMortgagePayment(mortgageBalance, mortgageRate, loanTerm);
+
+  return {
+    pi,
+    propertyTax,
+    insurance,
+    maintenance,
+    hoa,
+    pmi,
+    total: pi + propertyTax + insurance + maintenance + hoa + pmi
+  };
 }
 
 function getSellingCosts(homeValue) {
@@ -287,6 +457,7 @@ function getNIIT(taxableGain, magiBeforeGain, filingStatus) {
   const magiAfterGain = magiBeforeGain + taxableGain;
   const excessMagi = Math.max(0, magiAfterGain - threshold);
   const niitBase = Math.min(taxableGain, excessMagi);
+
   return {
     tax: niitBase * 0.038,
     niitBase,
@@ -294,17 +465,15 @@ function getNIIT(taxableGain, magiBeforeGain, filingStatus) {
   };
 }
 
-function getSaleTax(rawGain, taxableGain, depreciationRecapture, taxableIncomeBeforeGain, magiBeforeGain, filingStatus, stateRate) {
+function getSaleTax(taxableGain, depreciationRecapture, taxableIncomeBeforeGain, magiBeforeGain, filingStatus, stateRate) {
   const federal = getFederalLTCGTax(taxableGain, taxableIncomeBeforeGain, filingStatus);
   const niit = getNIIT(taxableGain, magiBeforeGain, filingStatus);
 
   const stateTax = taxableGain * stateRate;
   const recaptureTax = Math.max(0, depreciationRecapture) * 0.25;
 
-  const totalTax = federal.tax + niit.tax + stateTax + recaptureTax;
-
   return {
-    totalTax,
+    totalTax: federal.tax + niit.tax + stateTax + recaptureTax,
     federalTax: federal.tax,
     niitTax: niit.tax,
     stateTax,
@@ -314,10 +483,14 @@ function getSaleTax(rawGain, taxableGain, depreciationRecapture, taxableIncomeBe
   };
 }
 
-function calculateScenario(homeValueOverride, stateRateOverride = null) {
+function calculateScenario(homeValueOverride = null, stateRateOverride = null, year = 0) {
   const purchasePrice = getNumber("purchasePrice");
+  const baseMortgageBalance = getNumber("mortgageBalance");
+  const mortgageRate = getNumber("mortgageRate");
+  const loanTerm = getNumber("loanTerm");
+  const mortgageBalance = loanBalanceAfterYears(baseMortgageBalance, mortgageRate, loanTerm, year);
+
   const homeValue = homeValueOverride ?? getNumber("homeValue");
-  const mortgageBalance = getNumber("mortgageBalance");
   const improvements = getNumber("improvements");
 
   const filingStatus = document.getElementById("filingStatus").value;
@@ -338,12 +511,9 @@ function calculateScenario(homeValueOverride, stateRateOverride = null) {
     ? filingStatus === "married" ? 500000 : 250000
     : 0;
 
-  const gainAfter121 = Math.max(0, rawGain - exclusion);
-
-  const taxableGain = Math.max(0, gainAfter121);
+  const taxableGain = Math.max(0, rawGain - exclusion);
 
   const tax = getSaleTax(
-    rawGain,
     taxableGain,
     depreciationRecapture,
     taxableIncomeBeforeGain,
@@ -378,97 +548,185 @@ function calculateScenario(homeValueOverride, stateRateOverride = null) {
   };
 }
 
-function calculate() {
-  const r = calculateScenario();
+function runRentVsBuyProjection() {
+  const years = Math.max(1, getNumber("analysisYears"));
+  const purchasePrice = getNumber("purchasePrice");
+  const startingHomeValue = getNumber("homeValue");
+  const startingMortgageBalance = getNumber("mortgageBalance");
 
-  const verdict = r.netProceeds >= 0 ? "Likely BUY" : "Likely RENT / Avoid forced sale";
+  const downPayment = Math.max(0, purchasePrice - startingMortgageBalance);
+  const monthlyRentStart = getNumber("monthlyRent");
+  const rentIncrease = getNumber("rentIncrease") / 100;
+  const investmentReturn = getNumber("investmentReturn") / 100;
+  const appreciationRate = getNumber("homeAppreciation") / 100;
+
+  let rentPortfolio = downPayment;
+  const rows = [];
+
+  for (let y = 1; y <= years; y++) {
+    const monthlyBuy = getMonthlyBuyCost(y);
+    const annualBuyCost = monthlyBuy.total * 12;
+
+    const annualRent = monthlyRentStart * Math.pow(1 + rentIncrease, y - 1) * 12;
+
+    const annualSavings = annualBuyCost - annualRent;
+    rentPortfolio = rentPortfolio * (1 + investmentReturn) + annualSavings;
+
+    const projectedHomeValue = startingHomeValue * Math.pow(1 + appreciationRate, y);
+    const saleScenario = calculateScenario(projectedHomeValue, null, y);
+
+    rows.push({
+      year: y,
+      homeValue: projectedHomeValue,
+      mortgageBalance: saleScenario.mortgageBalance,
+      annualBuyCost,
+      annualRent,
+      rentPortfolio,
+      buyNetWorth: saleScenario.netProceeds,
+      rentNetWorth: rentPortfolio,
+      delta: saleScenario.netProceeds - rentPortfolio
+    });
+  }
+
+  return rows;
+}
+
+function getBreakevenYear(rows) {
+  const found = rows.find(r => r.buyNetWorth >= r.rentNetWorth);
+  return found ? found.year : "Never";
+}
+
+function renderBaseResults(base, projection) {
+  const monthlyBuy = getMonthlyBuyCost();
+  const monthlyRent = getNumber("monthlyRent");
+  const monthlyDelta = monthlyBuy.total - monthlyRent;
+
+  const breakeven = getBreakevenYear(projection);
+  const year5 = projection.find(r => r.year === 5);
+  const year10 = projection.find(r => r.year === 10);
+  const last = projection[projection.length - 1];
+
+  const verdict = last && last.delta >= 0 ? "Likely BUY" : "Likely RENT";
 
   document.getElementById("verdict").innerHTML =
     verdict + "<br>" +
-    "Net Sale Proceeds: " + money(r.netProceeds) + "<br>" +
-    "Raw Gain: " + money(r.rawGain) + "<br>" +
-    "Taxable Gain After Section 121: " + money(r.taxableGain) + "<br>" +
-    "Estimated Total Tax: " + money(r.tax.totalTax);
+    "At year " + last.year + ", buy minus rent is " + money(last.delta) + ".<br>" +
+    "Net sale proceeds today: " + money(base.netProceeds) + ". Estimated sale tax: " + money(base.tax.totalTax) + ".";
 
   document.getElementById("results").innerHTML = `
     <div class="result-grid">
-      <div class="result-box">
-        <small>Adjusted Sale Price</small>
-        <strong>${money(r.sale.adjustedSalePrice)}</strong>
-      </div>
-      <div class="result-box">
-        <small>Rush Discount</small>
-        <strong>${money(r.sale.rushDiscountAmount)}</strong>
-      </div>
-      <div class="result-box">
-        <small>Selling Costs</small>
-        <strong>${money(r.sale.sellingCosts)}</strong>
-      </div>
-      <div class="result-box">
-        <small>Mortgage Payoff</small>
-        <strong>${money(r.mortgageBalance)}</strong>
-      </div>
-      <div class="result-box">
-        <small>Adjusted Basis</small>
-        <strong>${money(r.adjustedBasis)}</strong>
-      </div>
-      <div class="result-box">
-        <small>Section 121 Exclusion Used</small>
-        <strong>${money(Math.min(r.rawGain, r.exclusion))}</strong>
-      </div>
-      <div class="result-box">
-        <small>Federal LTCG Tax</small>
-        <strong>${money(r.tax.federalTax)}</strong>
-      </div>
-      <div class="result-box">
-        <small>NIIT</small>
-        <strong>${money(r.tax.niitTax)}</strong>
-      </div>
-      <div class="result-box">
-        <small>State Capital Gains Tax</small>
-        <strong>${money(r.tax.stateTax)}</strong>
-      </div>
-      <div class="result-box">
-        <small>Depreciation Recapture Tax</small>
-        <strong>${money(r.tax.recaptureTax)}</strong>
+      <div class="result-box"><small>Monthly Buy Cost</small><strong>${money(monthlyBuy.total)}</strong></div>
+      <div class="result-box"><small>Principal + Interest</small><strong>${money(monthlyBuy.pi)}</strong></div>
+      <div class="result-box"><small>Property Tax / Month</small><strong>${money(monthlyBuy.propertyTax)}</strong></div>
+      <div class="result-box"><small>Insurance / Month</small><strong>${money(monthlyBuy.insurance)}</strong></div>
+      <div class="result-box"><small>Maintenance / Month</small><strong>${money(monthlyBuy.maintenance)}</strong></div>
+      <div class="result-box"><small>Monthly Rent</small><strong>${money(monthlyRent)}</strong></div>
+      <div class="result-box"><small>Monthly Delta</small><strong class="${classFor(-monthlyDelta)}">${money(monthlyDelta)}</strong></div>
+      <div class="result-box"><small>Breakeven Year</small><strong>${breakeven}</strong></div>
+      <div class="result-box"><small>5-Year Buy Minus Rent</small><strong class="${year5 ? classFor(year5.delta) : ""}">${year5 ? money(year5.delta) : "N/A"}</strong></div>
+      <div class="result-box"><small>10-Year Buy Minus Rent</small><strong class="${year10 ? classFor(year10.delta) : ""}">${year10 ? money(year10.delta) : "N/A"}</strong></div>
+      <div class="result-box"><small>Adjusted Sale Price</small><strong>${money(base.sale.adjustedSalePrice)}</strong></div>
+      <div class="result-box"><small>Selling Costs</small><strong>${money(base.sale.sellingCosts)}</strong></div>
+      <div class="result-box"><small>Raw Gain</small><strong>${money(base.rawGain)}</strong></div>
+      <div class="result-box"><small>Taxable Gain</small><strong>${money(base.taxableGain)}</strong></div>
+      <div class="result-box"><small>Federal LTCG Tax</small><strong>${money(base.tax.federalTax)}</strong></div>
+      <div class="result-box"><small>NIIT</small><strong>${money(base.tax.niitTax)}</strong></div>
+      <div class="result-box"><small>State CG Tax</small><strong>${money(base.tax.stateTax)}</strong></div>
+      <div class="result-box"><small>Depreciation Recapture Tax</small><strong>${money(base.tax.recaptureTax)}</strong></div>
+    </div>
+  `;
+}
+
+function renderProjectionTable(rows) {
+  let html = `
+    <div class="section">
+      <h3>Buy vs Rent Projection</h3>
+      <p class="note">Rent side assumes down payment is invested and monthly savings are invested. Buy side assumes sale at that year after selling costs and estimated taxes.</p>
+      <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Year</th>
+          <th>Home Value</th>
+          <th>Mortgage Balance</th>
+          <th>Annual Buy Cost</th>
+          <th>Annual Rent</th>
+          <th>Buy Net Worth</th>
+          <th>Rent Net Worth</th>
+          <th>Buy Minus Rent</th>
+        </tr>
+  `;
+
+  rows.forEach(r => {
+    html += `
+      <tr>
+        <td>${r.year}</td>
+        <td>${money(r.homeValue)}</td>
+        <td>${money(r.mortgageBalance)}</td>
+        <td>${money(r.annualBuyCost)}</td>
+        <td>${money(r.annualRent)}</td>
+        <td>${money(r.buyNetWorth)}</td>
+        <td>${money(r.rentNetWorth)}</td>
+        <td class="${classFor(r.delta)}">${money(r.delta)}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </table>
       </div>
     </div>
   `;
 
-  renderSensitivity();
+  document.getElementById("projection").innerHTML = html;
 }
 
 function renderSensitivity() {
   const baseHomeValue = getNumber("homeValue");
-  const appreciationRates = [-10, 0, 10, 20];
+  const homeValueChanges = [-10, 0, 10, 20];
   const stateRates = [0, 5, 10];
 
   let html = `
-    <h3>Sensitivity Analysis</h3>
-    <p class="note">Shows net proceeds under different home value and state tax assumptions.</p>
-    <table>
-      <tr>
-        <th>Home Value Change</th>
-        <th>State Tax 0%</th>
-        <th>State Tax 5%</th>
-        <th>State Tax 10%</th>
-      </tr>
+    <div class="section">
+      <h3>Sensitivity Analysis</h3>
+      <p class="note">Shows net sale proceeds under different home value and state capital gains tax assumptions.</p>
+      <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Home Value Change</th>
+          <th>State Tax 0%</th>
+          <th>State Tax 5%</th>
+          <th>State Tax 10%</th>
+        </tr>
   `;
 
-  appreciationRates.forEach(change => {
+  homeValueChanges.forEach(change => {
     const newHomeValue = baseHomeValue * (1 + change / 100);
     html += `<tr><td>${change > 0 ? "+" : ""}${change}%</td>`;
 
     stateRates.forEach(sr => {
-      const r = calculateScenario(newHomeValue, sr / 100);
+      const r = calculateScenario(newHomeValue, sr / 100, 0);
       html += `<td>${money(r.netProceeds)}</td>`;
     });
 
     html += `</tr>`;
   });
 
-  html += `</table>`;
+  html += `
+      </table>
+      </div>
+    </div>
+  `;
+
   document.getElementById("sensitivity").innerHTML = html;
+}
+
+function calculate() {
+  const base = calculateScenario();
+  const projection = runRentVsBuyProjection();
+
+  renderBaseResults(base, projection);
+  renderProjectionTable(projection);
+  renderSensitivity();
 }
 
 calculate();
